@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חלוקה להברות</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1>חלוקה להברות</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div class="activity-content" id="activity-area">
+      <div class="word-display" id="word-display">
+        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 20px;"></p>
+        <div class="word" id="current-word"></div>
+        <button class="btn btn-secondary" id="play-word-btn" style="margin-bottom: 20px;">
+          🔊 <span id="play-btn-text">שמע את המילה</span>
+        </button>
+      </div>
+
+      <div class="syllable-container" id="syllable-container"></div>
+
+      <div id="feedback-area"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-primary" id="next-btn" style="display: none;">
+          <span id="next-btn-text">המילה הבאה</span> →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const SyllablesActivity = {
+      words: [],
+      currentIndex: 0,
+      state: {},
+
+      async init() {
+        // Load state
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        // Load words data
+        try {
+          const res = await fetch('../../data/words.json');
+          const data = await res.json();
+          this.words = data.syllables;
+        } catch (e) {
+          console.error('Could not load words:', e);
+          return;
+        }
+
+        // Load progress
+        Progress.load(this.state.familyName || 'default');
+        Progress.setTotal(this.state.familyName || 'default', 'syllables', this.words.length);
+
+        this.updateGenderText();
+        this.showWord();
+        this.bindEvents();
+      },
+
+      updateGenderText() {
+        const g = this.state.gender || 'boy';
+        const texts = {
+          boy: {
+            instruction: 'הקשב למילה ולחץ על ההברות בסדר הנכון',
+            playBtn: 'שמע את המילה',
+            nextBtn: 'המילה הבאה',
+          },
+          girl: {
+            instruction: 'הקשיבי למילה ולחצי על ההברות בסדר הנכון',
+            playBtn: 'שמעי את המילה',
+            nextBtn: 'המילה הבאה',
+          }
+        };
+        const t = texts[g];
+        document.getElementById('instruction-text').textContent = t.instruction;
+        document.getElementById('play-btn-text').textContent = t.playBtn;
+        document.getElementById('next-btn-text').textContent = t.nextBtn;
+      },
+
+      showWord() {
+        if (this.currentIndex >= this.words.length) {
+          this.showComplete();
+          return;
+        }
+
+        const word = this.words[this.currentIndex];
+        document.getElementById('current-word').textContent = word.word;
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        // Create shuffled syllable blocks
+        const container = document.getElementById('syllable-container');
+        container.innerHTML = '';
+
+        // Create syllable buttons (shuffled)
+        const shuffled = [...word.syllables].sort(() => Math.random() - 0.5);
+        shuffled.forEach((syl, i) => {
+          const block = document.createElement('button');
+          block.className = 'syllable-block';
+          block.textContent = syl;
+          block.dataset.syllable = syl;
+          block.dataset.index = i;
+          block.addEventListener('click', () => this.handleSyllableClick(block, syl));
+          container.appendChild(block);
+        });
+
+        this.selectedOrder = [];
+        this.updateProgress();
+      },
+
+      selectedOrder: [],
+
+      handleSyllableClick(block, syllable) {
+        if (block.classList.contains('highlighted')) return;
+
+        block.classList.add('highlighted');
+        this.selectedOrder.push(syllable);
+
+        const word = this.words[this.currentIndex];
+
+        // Check if all syllables selected
+        if (this.selectedOrder.length === word.syllables.length) {
+          // Check order
+          const correct = this.selectedOrder.every((s, i) => s === word.syllables[i]);
+
+          if (correct) {
+            this.onCorrect();
+          } else {
+            this.onIncorrect();
+          }
+        }
+      },
+
+      onCorrect() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.innerHTML = `<div class="feedback success">${msg}</div>`;
+
+        document.querySelectorAll('.syllable-block').forEach(b => {
+          b.classList.remove('highlighted');
+          b.classList.add('correct');
+        });
+
+        // Mark progress
+        Progress.completeItem(
+          this.state.familyName || 'default',
+          'syllables',
+          this.currentIndex.toString()
+        );
+
+        document.getElementById('next-btn').style.display = 'inline-flex';
+      },
+
+      onIncorrect() {
+        const g = this.state.gender || 'boy';
+        const word = this.words[this.currentIndex];
+        const msg = g === 'girl' ? 'לא בדיוק... נסי שוב!' : 'לא בדיוק... נסה שוב!';
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.innerHTML = `<div class="feedback error">${msg}</div>`;
+
+        // Show correct order briefly
+        const hint = `הסדר הנכון: ${word.syllables.join(' - ')}`;
+        setTimeout(() => {
+          feedbackArea.innerHTML += `<div class="feedback info">${hint}</div>`;
+        }, 800);
+
+        // Reset after a moment
+        setTimeout(() => {
+          this.selectedOrder = [];
+          document.querySelectorAll('.syllable-block').forEach(b => {
+            b.classList.remove('highlighted');
+          });
+          feedbackArea.innerHTML = '';
+        }, 3000);
+      },
+
+      showComplete() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl'
+          ? 'סיימת את כל המילים! כל הכבוד! 🌟'
+          : 'סיימת את כל המילים! כל הכבוד! 🌟';
+
+        document.getElementById('activity-area').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">${msg}</h2>
+            <button class="btn btn-primary" onclick="window.location.href='../../index.html'">
+              חזרה לתפריט
+            </button>
+          </div>
+        `;
+      },
+
+      updateProgress() {
+        const pct = Math.round((this.currentIndex / this.words.length) * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+      },
+
+      bindEvents() {
+        document.getElementById('next-btn').addEventListener('click', () => {
+          this.currentIndex++;
+          this.showWord();
+        });
+
+        document.getElementById('play-word-btn').addEventListener('click', () => {
+          const word = this.words[this.currentIndex];
+          Speech.playAudio(word.audio).then(() => {
+            // If audio file doesn't exist, fallback to TTS
+          }).catch(() => {
+            Speech.speak(word.plain);
+          });
+        });
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => SyllablesActivity.init());
+  </script>
+
+</body>
+</html>

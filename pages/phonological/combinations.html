@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חלוקה לצירופים</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1>חלוקה לצירופים</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div class="activity-content" id="activity-area">
+      <div class="word-display" id="word-display">
+        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 20px;"></p>
+        <div class="word" id="current-word"></div>
+        <button class="btn btn-secondary" id="play-word-btn" style="margin-bottom: 20px;">
+          🔊 <span id="play-btn-text">שמע את המילה</span>
+        </button>
+      </div>
+
+      <!-- Show parts breakdown -->
+      <div id="parts-display" style="display: none; text-align: center; margin: 20px 0;">
+        <p style="font-size: 1.1rem; color: var(--text-medium); margin-bottom: 15px;">
+          החלוקה לצירופים (צליל + תנועה):
+        </p>
+        <div class="syllable-container" id="parts-container"></div>
+      </div>
+
+      <!-- Interactive: how many parts? -->
+      <div id="question-area" style="text-align: center; margin: 20px 0;">
+        <p id="question-text" style="font-size: 1.2rem; color: var(--text-dark); margin-bottom: 15px;"></p>
+        <div id="answer-buttons" style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;"></div>
+      </div>
+
+      <div id="feedback-area"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-primary" id="next-btn" style="display: none;">
+          <span id="next-btn-text">המילה הבאה</span> →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const CombinationsActivity = {
+      words: [],
+      currentIndex: 0,
+      state: {},
+
+      async init() {
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        try {
+          const res = await fetch('../../data/words.json');
+          const data = await res.json();
+          this.words = data.combinations;
+        } catch (e) {
+          console.error('Could not load words:', e);
+          return;
+        }
+
+        Progress.load(this.state.familyName || 'default');
+        Progress.setTotal(this.state.familyName || 'default', 'combinations', this.words.length);
+
+        this.updateGenderText();
+        this.showWord();
+        this.bindEvents();
+      },
+
+      updateGenderText() {
+        const g = this.state.gender || 'boy';
+        const texts = {
+          boy: {
+            instruction: 'הקשב למילה. כמה חלקים (צירופים) יש בה?',
+            playBtn: 'שמע את המילה',
+            nextBtn: 'המילה הבאה',
+            question: 'כמה צירופים שמעת במילה?',
+          },
+          girl: {
+            instruction: 'הקשיבי למילה. כמה חלקים (צירופים) יש בה?',
+            playBtn: 'שמעי את המילה',
+            nextBtn: 'המילה הבאה',
+            question: 'כמה צירופים שמעת במילה?',
+          }
+        };
+        const t = texts[g];
+        document.getElementById('instruction-text').textContent = t.instruction;
+        document.getElementById('play-btn-text').textContent = t.playBtn;
+        document.getElementById('next-btn-text').textContent = t.nextBtn;
+        document.getElementById('question-text').textContent = t.question;
+      },
+
+      showWord() {
+        if (this.currentIndex >= this.words.length) {
+          this.showComplete();
+          return;
+        }
+
+        const word = this.words[this.currentIndex];
+        document.getElementById('current-word').textContent = word.word;
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('feedback-area').innerHTML = '';
+        document.getElementById('parts-display').style.display = 'none';
+
+        // Create answer buttons (1-5)
+        const container = document.getElementById('answer-buttons');
+        container.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          const btn = document.createElement('button');
+          btn.className = 'syllable-block';
+          btn.textContent = i;
+          btn.style.minWidth = '60px';
+          btn.addEventListener('click', () => this.checkAnswer(i));
+          container.appendChild(btn);
+        }
+
+        document.getElementById('question-area').style.display = 'block';
+        this.updateProgress();
+      },
+
+      checkAnswer(num) {
+        const word = this.words[this.currentIndex];
+        const correct = word.parts.length;
+        const g = this.state.gender || 'boy';
+
+        if (num === correct) {
+          // Show parts breakdown
+          document.getElementById('parts-display').style.display = 'block';
+          const partsContainer = document.getElementById('parts-container');
+          partsContainer.innerHTML = '';
+          word.parts.forEach((part, i) => {
+            const block = document.createElement('span');
+            block.className = 'syllable-block correct';
+            block.textContent = part;
+            partsContainer.appendChild(block);
+
+            // Add separator
+            if (i < word.parts.length - 1) {
+              const sep = document.createElement('span');
+              sep.textContent = ' - ';
+              sep.style.fontSize = '1.5rem';
+              sep.style.color = 'var(--text-light)';
+              partsContainer.appendChild(sep);
+            }
+          });
+
+          const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+          document.getElementById('question-area').style.display = 'none';
+
+          Progress.completeItem(
+            this.state.familyName || 'default',
+            'combinations',
+            this.currentIndex.toString()
+          );
+
+          document.getElementById('next-btn').style.display = 'inline-flex';
+        } else {
+          const msg = g === 'girl' ? 'לא בדיוק... נסי שוב!' : 'לא בדיוק... נסה שוב!';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+
+          // Highlight wrong button
+          const buttons = document.getElementById('answer-buttons').children;
+          for (const btn of buttons) {
+            if (parseInt(btn.textContent) === num) {
+              btn.classList.add('highlighted');
+              setTimeout(() => btn.classList.remove('highlighted'), 1000);
+            }
+          }
+        }
+      },
+
+      showComplete() {
+        document.getElementById('activity-area').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את כל המילים! כל הכבוד! 🌟</h2>
+            <button class="btn btn-primary" onclick="window.location.href='../../index.html'">
+              חזרה לתפריט
+            </button>
+          </div>
+        `;
+      },
+
+      updateProgress() {
+        const pct = Math.round((this.currentIndex / this.words.length) * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+      },
+
+      bindEvents() {
+        document.getElementById('next-btn').addEventListener('click', () => {
+          this.currentIndex++;
+          this.showWord();
+        });
+
+        document.getElementById('play-word-btn').addEventListener('click', () => {
+          const word = this.words[this.currentIndex];
+          Speech.playAudio(word.audio).catch(() => {
+            Speech.speak(word.plain);
+          });
+        });
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => CombinationsActivity.init());
+  </script>
+
+</body>
+</html>

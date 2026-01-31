@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>קידוד הניקוד</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1>קידוד הניקוד</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div class="activity-content" id="activity-area">
+      <!-- Learn mode: show each nikud symbol -->
+      <div id="learn-section">
+        <div class="nikud-display" id="nikud-display">
+          <div class="nikud-symbol" id="nikud-symbol"></div>
+          <div class="nikud-name" id="nikud-name"></div>
+          <div class="nikud-sound" id="nikud-sound"></div>
+          <p id="nikud-desc" style="color: var(--text-light); margin-top: 10px;"></p>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <button class="btn btn-secondary" id="play-nikud-btn">
+            🔊 <span id="play-nikud-text">שמע את הצליל</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz mode: identify nikud -->
+      <div id="quiz-section" style="display: none;">
+        <p id="quiz-instruction" style="font-size: 1.2rem; text-align: center; color: var(--text-medium); margin-bottom: 20px;"></p>
+        <div class="nikud-display">
+          <div class="nikud-symbol" id="quiz-symbol" style="font-size: 6rem;"></div>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="quiz-options"></div>
+      </div>
+
+      <div id="feedback-area"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-primary" id="next-btn" onclick="NikudCoding.next()">
+          <span id="next-btn-text">הבא</span> →
+        </button>
+        <button class="btn btn-secondary" id="start-quiz-btn" style="display: none;" onclick="NikudCoding.startQuiz()">
+          <span id="quiz-btn-text">בוא נתרגל!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const NikudCoding = {
+      nikudList: [],
+      currentIndex: 0,
+      phase: 'learn', // 'learn' or 'quiz'
+      quizQuestions: [],
+      quizIndex: 0,
+      state: {},
+
+      async init() {
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        try {
+          const res = await fetch('../../data/nikud.json');
+          const data = await res.json();
+          this.nikudList = data.nikud;
+        } catch (e) {
+          console.error('Could not load nikud:', e);
+          return;
+        }
+
+        this.updateGenderText();
+        this.showNikud();
+      },
+
+      updateGenderText() {
+        const g = this.state.gender || 'boy';
+        document.getElementById('play-nikud-text').textContent =
+          g === 'girl' ? 'שמעי את הצליל' : 'שמע את הצליל';
+        document.getElementById('quiz-btn-text').textContent =
+          g === 'girl' ? 'בואי נתרגל!' : 'בוא נתרגל!';
+      },
+
+      showNikud() {
+        if (this.currentIndex >= this.nikudList.length) {
+          // Done learning, offer quiz
+          document.getElementById('learn-section').style.display = 'none';
+          document.getElementById('next-btn').style.display = 'none';
+          document.getElementById('start-quiz-btn').style.display = 'inline-flex';
+          document.getElementById('feedback-area').innerHTML =
+            '<div class="feedback info">למדנו את כל סימני הניקוד! עכשיו בוא נתרגל 💪</div>';
+          return;
+        }
+
+        const n = this.nikudList[this.currentIndex];
+        document.getElementById('nikud-symbol').textContent = n.symbol;
+        document.getElementById('nikud-name').textContent = n.name;
+        document.getElementById('nikud-sound').textContent = `צליל: ${n.sound}`;
+        document.getElementById('nikud-desc').textContent = n.description;
+        document.getElementById('feedback-area').innerHTML = '';
+
+        this.updateProgress();
+
+        // Play button
+        document.getElementById('play-nikud-btn').onclick = () => {
+          Speech.playAudio(n.audio).catch(() => {
+            Speech.speak(n.name + '. ' + n.sound);
+          });
+        };
+      },
+
+      next() {
+        if (this.phase === 'learn') {
+          this.currentIndex++;
+          this.showNikud();
+        } else {
+          this.quizIndex++;
+          this.showQuizQuestion();
+        }
+      },
+
+      startQuiz() {
+        this.phase = 'quiz';
+        this.quizIndex = 0;
+        this.quizQuestions = this.shuffleArray([...this.nikudList]);
+
+        document.getElementById('learn-section').style.display = 'none';
+        document.getElementById('quiz-section').style.display = 'block';
+        document.getElementById('start-quiz-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+
+        const g = this.state.gender || 'boy';
+        document.getElementById('quiz-instruction').textContent =
+          g === 'girl' ? 'מה השם של סימן הניקוד?' : 'מה השם של סימן הניקוד?';
+
+        this.showQuizQuestion();
+      },
+
+      showQuizQuestion() {
+        if (this.quizIndex >= this.quizQuestions.length) {
+          this.showComplete();
+          return;
+        }
+
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        const target = this.quizQuestions[this.quizIndex];
+        document.getElementById('quiz-symbol').textContent = target.symbol;
+
+        const container = document.getElementById('quiz-options');
+        container.innerHTML = '';
+
+        let options = this.shuffleArray(
+          this.nikudList.filter(n => n.name !== target.name)
+        ).slice(0, 3).map(n => n.name);
+        options.push(target.name);
+        options = this.shuffleArray(options);
+
+        options.forEach(name => {
+          const btn = document.createElement('button');
+          btn.className = 'syllable-block';
+          btn.textContent = name;
+          btn.style.fontSize = '1.2rem';
+          btn.addEventListener('click', () => {
+            if (name === target.name) {
+              btn.classList.add('correct');
+              const g = this.state.gender || 'boy';
+              const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+              document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+
+              Progress.completeItem(
+                this.state.familyName || 'default',
+                'nikud-coding',
+                this.quizIndex.toString()
+              );
+
+              document.getElementById('next-btn').style.display = 'inline-flex';
+            } else {
+              btn.classList.add('highlighted');
+              setTimeout(() => btn.classList.remove('highlighted'), 600);
+              const g = this.state.gender || 'boy';
+              const msg = g === 'girl' ? 'נסי שוב!' : 'נסה שוב!';
+              document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+            }
+          });
+          container.appendChild(btn);
+        });
+
+        this.updateProgress();
+      },
+
+      showComplete() {
+        document.getElementById('activity-area').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את לימוד הניקוד! כל הכבוד! 🌟</h2>
+            <button class="btn btn-primary" onclick="window.location.href='../../index.html'">
+              חזרה לתפריט
+            </button>
+          </div>
+        `;
+      },
+
+      updateProgress() {
+        let pct = 0;
+        if (this.phase === 'learn') {
+          pct = Math.round((this.currentIndex / this.nikudList.length) * 50); // Learning = first 50%
+        } else {
+          pct = 50 + Math.round((this.quizIndex / this.quizQuestions.length) * 50); // Quiz = last 50%
+        }
+        document.getElementById('progress-fill').style.width = pct + '%';
+      },
+
+      shuffleArray(arr) {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => NikudCoding.init());
+  </script>
+
+</body>
+</html>

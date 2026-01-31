@@ -1,0 +1,37 @@
+{
+  "nikud": [
+    { "symbol": "בַ", "name": "פַּתָח", "sound": "אַ", "description": "קו קטן מתחת לאות", "audio": "audio/nikud/patach.mp3" },
+    { "symbol": "בָ", "name": "קָמָץ", "sound": "אָ", "description": "כמו T קטנה מתחת לאות", "audio": "audio/nikud/kamatz.mp3" },
+    { "symbol": "בִ", "name": "חִירִיק", "sound": "אִי", "description": "נקודה מתחת לאות", "audio": "audio/nikud/hirik.mp3" },
+    { "symbol": "בֵ", "name": "צֵירֵי", "sound": "אֵ", "description": "שתי נקודות מתחת לאות", "audio": "audio/nikud/tsere.mp3" },
+    { "symbol": "בֶ", "name": "סֶגּוֹל", "sound": "אֶ", "description": "שלוש נקודות כמו משולש מתחת לאות", "audio": "audio/nikud/segol.mp3" },
+    { "symbol": "בֹ", "name": "חוֹלָם", "sound": "אוֹ", "description": "נקודה מעל האות", "audio": "audio/nikud/holam.mp3" },
+    { "symbol": "בוּ", "name": "שׁוּרוּק", "sound": "אוּ", "description": "וָו עם נקודה", "audio": "audio/nikud/shuruk.mp3" },
+    { "symbol": "בֻ", "name": "קוּבּוּץ", "sound": "אוּ", "description": "שלוש נקודות אלכסוניות מתחת", "audio": "audio/nikud/kubutz.mp3" },
+    { "symbol": "בְ", "name": "שְׁוָא", "sound": "אְ (קצר מאוד / שקט)", "description": "שתי נקודות אנכיות מתחת לאות", "audio": "audio/nikud/shva.mp3" }
+  ],
+  "practice": [
+    { "text": "בַּ", "reading": "בַּ", "audio": "audio/nikud/practice/ba.mp3" },
+    { "text": "גִּי", "reading": "גִּי", "audio": "audio/nikud/practice/gi.mp3" },
+    { "text": "דוֹ", "reading": "דוֹ", "audio": "audio/nikud/practice/do.mp3" },
+    { "text": "הֵ", "reading": "הֵ", "audio": "audio/nikud/practice/he.mp3" },
+    { "text": "זֶ", "reading": "זֶ", "audio": "audio/nikud/practice/ze.mp3" },
+    { "text": "לוּ", "reading": "לוּ", "audio": "audio/nikud/practice/lu.mp3" },
+    { "text": "מָ", "reading": "מָ", "audio": "audio/nikud/practice/ma.mp3" },
+    { "text": "נַ", "reading": "נַ", "audio": "audio/nikud/practice/na.mp3" },
+    { "text": "סִי", "reading": "סִי", "audio": "audio/nikud/practice/si.mp3" },
+    { "text": "פֹּ", "reading": "פֹּ", "audio": "audio/nikud/practice/po.mp3" }
+  ],
+  "practiceWords": [
+    { "word": "דָּג", "syllableCount": 1, "audio": "audio/nikud/practice/dag.mp3" },
+    { "word": "יָד", "syllableCount": 1, "audio": "audio/nikud/practice/yad.mp3" },
+    { "word": "סוּס", "syllableCount": 1, "audio": "audio/nikud/practice/sus.mp3" },
+    { "word": "פָּרָה", "syllableCount": 2, "audio": "audio/nikud/practice/para.mp3" },
+    { "word": "דֹּב", "syllableCount": 1, "audio": "audio/nikud/practice/dov.mp3" },
+    { "word": "גָּמָל", "syllableCount": 2, "audio": "audio/nikud/practice/gamal.mp3" },
+    { "word": "תוּכִּי", "syllableCount": 2, "audio": "audio/nikud/practice/tuki.mp3" },
+    { "word": "סִירָה", "syllableCount": 2, "audio": "audio/nikud/practice/sira.mp3" },
+    { "word": "מָטוֹס", "syllableCount": 2, "audio": "audio/nikud/practice/matos.mp3" },
+    { "word": "בֻּבָּה", "syllableCount": 2, "audio": "audio/nikud/practice/buba.mp3" }
+  ]
+}

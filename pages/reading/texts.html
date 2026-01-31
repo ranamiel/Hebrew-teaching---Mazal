@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>טקסטים לקריאה</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1>טקסטים לקריאה</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <!-- Text Selection -->
+    <div id="text-selection" class="activity-content">
+      <h2 style="color: var(--warm-red); text-align: center; margin-bottom: 20px;" id="select-title">בחרו טקסט לקריאה</h2>
+      <div class="subtopic-list" id="text-list"></div>
+    </div>
+
+    <!-- Reading Area -->
+    <div id="reading-area" style="display: none;">
+      <div class="activity-content">
+        <h2 id="text-title" style="color: var(--warm-red); text-align: center; margin-bottom: 20px;"></h2>
+
+        <div class="reading-area">
+          <div class="reading-text" id="reading-text"></div>
+        </div>
+
+        <div style="text-align: center; margin: 25px 0;">
+          <p id="mic-instruction" style="color: var(--text-medium); margin-bottom: 10px;"></p>
+          <button class="mic-btn" id="mic-btn" onclick="ReadingActivity.toggleRecording()">
+            🎤
+          </button>
+          <p id="mic-status" style="color: var(--text-light); font-size: 0.9rem; margin-top: 8px;"></p>
+        </div>
+
+        <div id="feedback-area"></div>
+
+        <!-- Parent verification -->
+        <div class="parent-controls" id="parent-controls" style="display: none;">
+          <p>👨‍👩‍👧 אזור הורים: האם הילד/ה קרא/ה נכון?</p>
+          <div class="parent-btn-group">
+            <button class="btn btn-primary" onclick="ReadingActivity.parentVerify(true)" style="padding: 10px 25px;">
+              ✓ כן, נכון
+            </button>
+            <button class="btn btn-secondary" onclick="ReadingActivity.parentVerify(false)" style="padding: 10px 25px;">
+              ✗ צריך לנסות שוב
+            </button>
+          </div>
+        </div>
+
+        <div class="nav-controls">
+          <button class="btn btn-primary" id="next-word-btn" style="display: none;" onclick="ReadingActivity.nextWord()">
+            המילה הבאה →
+          </button>
+          <button class="btn btn-primary" id="finish-btn" style="display: none;" onclick="ReadingActivity.showTextSelection()">
+            סיימתי! חזרה לבחירת טקסט
+          </button>
+          <button class="btn btn-back" onclick="ReadingActivity.showTextSelection()">
+            ← חזרה לבחירת טקסט
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const ReadingActivity = {
+      texts: [],
+      currentText: null,
+      currentWordIndex: 0,
+      state: {},
+      speechAvailable: false,
+
+      async init() {
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        // Init speech recognition
+        this.speechAvailable = Speech.init();
+
+        try {
+          const res = await fetch('../../data/texts.json');
+          const data = await res.json();
+          this.texts = data.texts;
+        } catch (e) {
+          console.error('Could not load texts:', e);
+          return;
+        }
+
+        this.updateGenderText();
+        this.showTextList();
+      },
+
+      updateGenderText() {
+        const g = this.state.gender || 'boy';
+        document.getElementById('select-title').textContent =
+          g === 'girl' ? 'בחרי טקסט לקריאה' : 'בחרו טקסט לקריאה';
+        document.getElementById('mic-instruction').textContent =
+          g === 'girl' ? 'לחצי על המיקרופון וקראי את המילה המודגשת' : 'לחץ על המיקרופון וקרא את המילה המודגשת';
+      },
+
+      showTextList() {
+        document.getElementById('text-selection').style.display = 'block';
+        document.getElementById('reading-area').style.display = 'none';
+
+        const list = document.getElementById('text-list');
+        list.innerHTML = '';
+
+        this.texts.forEach((text, i) => {
+          const btn = document.createElement('button');
+          btn.className = 'subtopic-btn';
+          const levelStars = '⭐'.repeat(text.level);
+          btn.innerHTML = `
+            <span class="subtopic-icon">📖</span>
+            <span>${text.title} <small style="color: var(--text-light);">${levelStars}</small></span>
+          `;
+          btn.addEventListener('click', () => this.startText(i));
+          list.appendChild(btn);
+        });
+      },
+
+      showTextSelection() {
+        this.showTextList();
+      },
+
+      startText(index) {
+        this.currentText = this.texts[index];
+        this.currentWordIndex = 0;
+
+        document.getElementById('text-selection').style.display = 'none';
+        document.getElementById('reading-area').style.display = 'block';
+        document.getElementById('text-title').textContent = this.currentText.title;
+        document.getElementById('finish-btn').style.display = 'none';
+        document.getElementById('parent-controls').style.display = 'none';
+
+        this.renderText();
+      },
+
+      renderText() {
+        const container = document.getElementById('reading-text');
+        container.innerHTML = '';
+
+        this.currentText.words.forEach((word, i) => {
+          const span = document.createElement('span');
+          span.textContent = word + ' ';
+          span.dataset.index = i;
+
+          if (i < this.currentWordIndex) {
+            span.className = 'completed-word';
+          } else if (i === this.currentWordIndex) {
+            span.className = 'current-word';
+          }
+
+          container.appendChild(span);
+        });
+
+        document.getElementById('next-word-btn').style.display = 'none';
+        document.getElementById('feedback-area').innerHTML = '';
+        document.getElementById('parent-controls').style.display = 'none';
+        document.getElementById('mic-status').textContent = '';
+      },
+
+      toggleRecording() {
+        const micBtn = document.getElementById('mic-btn');
+
+        if (Speech.isRecording) {
+          Speech.stopListening();
+          micBtn.classList.remove('recording');
+          document.getElementById('mic-status').textContent = '';
+          return;
+        }
+
+        if (!this.speechAvailable) {
+          // No speech recognition - go directly to parent controls
+          this.showParentControls();
+          return;
+        }
+
+        micBtn.classList.add('recording');
+        document.getElementById('mic-status').textContent = 'מקשיב...';
+
+        Speech.startListening(
+          (results) => {
+            micBtn.classList.remove('recording');
+            document.getElementById('mic-status').textContent = '';
+
+            const expectedWord = this.currentText.words[this.currentWordIndex];
+            let matched = false;
+
+            for (const result of results) {
+              if (Speech.compareText(result.text, expectedWord)) {
+                matched = true;
+                break;
+              }
+            }
+
+            if (matched) {
+              this.onWordCorrect();
+            } else {
+              // Show what was heard and offer parent verification
+              const heard = results[0]?.text || '';
+              this.onWordUnclear(heard);
+            }
+          },
+          (error) => {
+            micBtn.classList.remove('recording');
+            document.getElementById('mic-status').textContent = '';
+
+            if (error === 'no-speech') {
+              const g = this.state.gender || 'boy';
+              document.getElementById('feedback-area').innerHTML =
+                `<div class="feedback info">${g === 'girl' ? 'לא שמעתי... נסי שוב' : 'לא שמעתי... נסה שוב'}</div>`;
+            } else {
+              // Fallback to parent controls
+              this.showParentControls();
+            }
+          }
+        );
+      },
+
+      onWordCorrect() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+
+        // Mark word as completed
+        const words = document.querySelectorAll('#reading-text span');
+        words[this.currentWordIndex].className = 'completed-word';
+
+        if (this.currentWordIndex < this.currentText.words.length - 1) {
+          document.getElementById('next-word-btn').style.display = 'inline-flex';
+        } else {
+          // Text complete!
+          this.onTextComplete();
+        }
+      },
+
+      onWordUnclear(heard) {
+        const g = this.state.gender || 'boy';
+        let msg = '';
+        if (heard) {
+          msg = `שמעתי: "${heard}"`;
+        } else {
+          msg = g === 'girl' ? 'לא הצלחתי לזהות... ' : 'לא הצלחתי לזהות... ';
+        }
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback info">${msg}</div>`;
+        this.showParentControls();
+      },
+
+      showParentControls() {
+        document.getElementById('parent-controls').style.display = 'block';
+      },
+
+      parentVerify(correct) {
+        document.getElementById('parent-controls').style.display = 'none';
+
+        if (correct) {
+          this.onWordCorrect();
+        } else {
+          const g = this.state.gender || 'boy';
+          const msg = g === 'girl' ? 'בסדר, נסי שוב! 💪' : 'בסדר, נסה שוב! 💪';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+        }
+      },
+
+      nextWord() {
+        this.currentWordIndex++;
+        this.renderText();
+      },
+
+      onTextComplete() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl'
+          ? 'קראת את כל הטקסט! כל הכבוד! 🌟'
+          : 'קראת את כל הטקסט! כל הכבוד! 🌟';
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+
+        Progress.completeItem(
+          this.state.familyName || 'default',
+          'reading',
+          this.currentText.id.toString()
+        );
+
+        document.getElementById('finish-btn').style.display = 'inline-flex';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => ReadingActivity.init());
+  </script>
+
+</body>
+</html>

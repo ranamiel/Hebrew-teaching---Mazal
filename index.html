@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>לומדים לקרוא עברית</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- === Welcome Page === -->
+  <div id="welcome" class="page active">
+    <div class="welcome-wrapper">
+      <h1 class="welcome-title">ברוכים וברוכות הבאים</h1>
+      <p class="welcome-subtitle">פה לומדים ולומדות עברית עם משפחת עמיאל</p>
+
+      <form id="family-form" class="family-input-group">
+        <label for="family-name-input">הכניסו את שם המשפחה שלכם</label>
+        <input
+          type="text"
+          id="family-name-input"
+          placeholder="שם משפחה בעברית"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="btn btn-primary">יאללה, מתחילים!</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- === Gender Selection === -->
+  <div id="gender-select" class="page">
+    <div class="gender-selection">
+      <h1 class="gender-title">שלום למשפחת <span id="gender-family-name"></span>!</h1>
+      <p style="font-size: 1.2rem; color: var(--text-medium);">מי לומד היום?</p>
+
+      <div class="gender-buttons">
+        <button class="gender-btn" data-gender="boy">
+          <span class="gender-icon">👦</span>
+          <span>בן</span>
+        </button>
+        <button class="gender-btn" data-gender="girl">
+          <span class="gender-icon">👧</span>
+          <span>בת</span>
+        </button>
+      </div>
+
+      <button class="btn btn-back" data-navigate="welcome">← חזרה</button>
+    </div>
+  </div>
+
+  <!-- === Dashboard - Topic Selection === -->
+  <div id="dashboard" class="page">
+    <div class="container">
+      <div class="dashboard-header">
+        <h1>משפחת <span id="dashboard-family-name"></span></h1>
+        <p id="dashboard-greeting"></p>
+        <p>מה רוצים ללמוד היום?</p>
+      </div>
+
+      <div class="topics-grid">
+
+        <!-- Topic 1: Phonological Awareness -->
+        <div class="topic-card">
+          <h2>מודעות פונולוגית</h2>
+          <p class="topic-desc">לומדים להכיר את הצלילים של השפה העברית</p>
+          <div class="subtopic-list">
+            <button class="subtopic-btn" data-activity="syllables">
+              <span class="subtopic-icon">🔤</span>
+              <span>חלוקה להברות</span>
+            </button>
+            <button class="subtopic-btn" data-activity="combinations">
+              <span class="subtopic-icon">🔗</span>
+              <span>חלוקה לצירופים</span>
+            </button>
+            <button class="subtopic-btn" data-activity="letters">
+              <span class="subtopic-icon">✏️</span>
+              <span>אותיות - זיהוי, שיום וצליל</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Topic 2: Nikud -->
+        <div class="topic-card">
+          <h2>לימוד הניקוד</h2>
+          <p class="topic-desc">לומדים את סימני הניקוד ואיך לקרוא אותם</p>
+          <div class="subtopic-list">
+            <button class="subtopic-btn" data-activity="nikud-coding">
+              <span class="subtopic-icon">📖</span>
+              <span>קידוד הניקוד</span>
+            </button>
+            <button class="subtopic-btn" data-activity="nikud-practice">
+              <span class="subtopic-icon">📝</span>
+              <span>התנסות בקריאה פשוטה</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Topic 3: Reading -->
+        <div class="topic-card">
+          <h2>קריאת טקסטים</h2>
+          <p class="topic-desc">קוראים טקסטים פשוטים בקול רם</p>
+          <div class="subtopic-list">
+            <button class="subtopic-btn" data-activity="reading">
+              <span class="subtopic-icon">📚</span>
+              <span>טקסטים פשוטים לקריאה</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="text-align: center; padding: 20px 0;">
+        <button class="btn btn-back" onclick="App.resetFamily()">← החלפת משפחה</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

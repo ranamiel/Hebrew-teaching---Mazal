@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>אותיות - זיהוי, שיום וצליל</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1 id="page-title">אותיות</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <!-- Mode Selection -->
+    <div id="mode-select" class="activity-content" style="text-align: center;">
+      <h2 style="color: var(--warm-red); margin-bottom: 25px;">מה רוצים לתרגל?</h2>
+      <div style="display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 0 auto;">
+        <button class="subtopic-btn" onclick="LettersActivity.startMode('identify')">
+          <span class="subtopic-icon">👁️</span>
+          <span>זיהוי אותיות</span>
+        </button>
+        <button class="subtopic-btn" onclick="LettersActivity.startMode('name')">
+          <span class="subtopic-icon">🗣️</span>
+          <span>שיום אותיות (נתינת שם)</span>
+        </button>
+        <button class="subtopic-btn" onclick="LettersActivity.startMode('sound')">
+          <span class="subtopic-icon">🔊</span>
+          <span>צליל אותיות</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Area -->
+    <div id="activity-area" style="display: none;">
+      <div class="progress-bar">
+        <div class="fill" id="progress-fill" style="width: 0%"></div>
+      </div>
+
+      <div class="activity-content">
+        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); text-align: center; margin-bottom: 20px;"></p>
+
+        <!-- For identify mode: show letter, ask to find it in grid -->
+        <div id="identify-area" style="display: none;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <button class="btn btn-secondary" id="play-letter-btn">
+              🔊 <span id="play-letter-text">שמע את שם האות</span>
+            </button>
+          </div>
+          <div class="letter-grid" id="letter-grid"></div>
+        </div>
+
+        <!-- For name mode: show letter, ask for its name -->
+        <div id="name-area" style="display: none;">
+          <div class="word-display">
+            <div class="word" id="shown-letter" style="font-size: 6rem;"></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="name-options"></div>
+        </div>
+
+        <!-- For sound mode: show letter, ask for its sound -->
+        <div id="sound-area" style="display: none;">
+          <div class="word-display">
+            <div class="word" id="sound-letter" style="font-size: 6rem;"></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="sound-options"></div>
+        </div>
+
+        <div id="feedback-area"></div>
+
+        <div class="nav-controls">
+          <button class="btn btn-primary" id="next-btn" style="display: none;" onclick="LettersActivity.nextQuestion()">
+            הבא →
+          </button>
+          <button class="btn btn-back" id="back-to-modes" style="display: none;" onclick="LettersActivity.showModeSelect()">
+            ← חזרה לבחירת תרגול
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const LettersActivity = {
+      letters: [],
+      currentIndex: 0,
+      mode: null,
+      questions: [],
+      state: {},
+
+      async init() {
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        try {
+          const res = await fetch('../../data/letters.json');
+          const data = await res.json();
+          this.letters = data.letters;
+        } catch (e) {
+          console.error('Could not load letters:', e);
+        }
+      },
+
+      startMode(mode) {
+        this.mode = mode;
+        this.currentIndex = 0;
+        this.questions = this.shuffleArray([...this.letters]);
+
+        document.getElementById('mode-select').style.display = 'none';
+        document.getElementById('activity-area').style.display = 'block';
+
+        // Hide all mode areas
+        document.getElementById('identify-area').style.display = 'none';
+        document.getElementById('name-area').style.display = 'none';
+        document.getElementById('sound-area').style.display = 'none';
+
+        const g = this.state.gender || 'boy';
+
+        if (mode === 'identify') {
+          document.getElementById('page-title').textContent = 'זיהוי אותיות';
+          document.getElementById('identify-area').style.display = 'block';
+          document.getElementById('instruction-text').textContent =
+            g === 'girl' ? 'הקשיבי לשם האות ולחצי עליה' : 'הקשב לשם האות ולחץ עליה';
+          document.getElementById('play-letter-text').textContent =
+            g === 'girl' ? 'שמעי את שם האות' : 'שמע את שם האות';
+        } else if (mode === 'name') {
+          document.getElementById('page-title').textContent = 'שיום אותיות';
+          document.getElementById('name-area').style.display = 'block';
+          document.getElementById('instruction-text').textContent =
+            g === 'girl' ? 'מה השם של האות? בחרי את התשובה הנכונה' : 'מה השם של האות? בחר את התשובה הנכונה';
+        } else if (mode === 'sound') {
+          document.getElementById('page-title').textContent = 'צליל אותיות';
+          document.getElementById('sound-area').style.display = 'block';
+          document.getElementById('instruction-text').textContent =
+            g === 'girl' ? 'מה הצליל של האות? בחרי את התשובה הנכונה' : 'מה הצליל של האות? בחר את התשובה הנכונה';
+        }
+
+        this.showQuestion();
+      },
+
+      showQuestion() {
+        if (this.currentIndex >= this.questions.length) {
+          this.showComplete();
+          return;
+        }
+
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('back-to-modes').style.display = 'none';
+        document.getElementById('feedback-area').innerHTML = '';
+
+        const letter = this.questions[this.currentIndex];
+
+        if (this.mode === 'identify') {
+          this.showIdentifyQuestion(letter);
+        } else if (this.mode === 'name') {
+          this.showNameQuestion(letter);
+        } else if (this.mode === 'sound') {
+          this.showSoundQuestion(letter);
+        }
+
+        this.updateProgress();
+      },
+
+      showIdentifyQuestion(target) {
+        // Create a grid with all letters, player needs to find the target
+        const grid = document.getElementById('letter-grid');
+        grid.innerHTML = '';
+
+        // Pick 8 random letters including the target
+        let options = this.shuffleArray([...this.letters]).slice(0, 8);
+        if (!options.find(l => l.letter === target.letter)) {
+          options[0] = target;
+          options = this.shuffleArray(options);
+        }
+
+        options.forEach(l => {
+          const cell = document.createElement('button');
+          cell.className = 'letter-cell';
+          cell.textContent = l.letter;
+          cell.addEventListener('click', () => {
+            if (l.letter === target.letter) {
+              cell.classList.add('correct');
+              this.onCorrect();
+            } else {
+              cell.classList.add('incorrect');
+              setTimeout(() => cell.classList.remove('incorrect'), 600);
+              this.onWrongAttempt();
+            }
+          });
+          grid.appendChild(cell);
+        });
+
+        // Setup play button
+        document.getElementById('play-letter-btn').onclick = () => {
+          Speech.playAudio(target.audio).catch(() => {
+            Speech.speak(target.name);
+          });
+        };
+      },
+
+      showNameQuestion(target) {
+        document.getElementById('shown-letter').textContent = target.letter;
+        const container = document.getElementById('name-options');
+        container.innerHTML = '';
+
+        // Pick 3 random wrong names + correct
+        let options = this.shuffleArray(
+          this.letters.filter(l => l.letter !== target.letter)
+        ).slice(0, 3).map(l => l.name);
+        options.push(target.name);
+        options = this.shuffleArray(options);
+
+        options.forEach(name => {
+          const btn = document.createElement('button');
+          btn.className = 'syllable-block';
+          btn.textContent = name;
+          btn.style.fontSize = '1.3rem';
+          btn.addEventListener('click', () => {
+            if (name === target.name) {
+              btn.classList.add('correct');
+              this.onCorrect();
+            } else {
+              btn.classList.add('highlighted');
+              setTimeout(() => btn.classList.remove('highlighted'), 600);
+              this.onWrongAttempt();
+            }
+          });
+          container.appendChild(btn);
+        });
+      },
+
+      showSoundQuestion(target) {
+        document.getElementById('sound-letter').textContent = target.letter;
+        const container = document.getElementById('sound-options');
+        container.innerHTML = '';
+
+        let options = this.shuffleArray(
+          this.letters.filter(l => l.letter !== target.letter)
+        ).slice(0, 3).map(l => l.sound);
+        options.push(target.sound);
+        options = this.shuffleArray(options);
+
+        options.forEach(sound => {
+          const btn = document.createElement('button');
+          btn.className = 'syllable-block';
+          btn.textContent = sound;
+          btn.style.fontSize = '1.3rem';
+          btn.addEventListener('click', () => {
+            if (sound === target.sound) {
+              btn.classList.add('correct');
+              this.onCorrect();
+            } else {
+              btn.classList.add('highlighted');
+              setTimeout(() => btn.classList.remove('highlighted'), 600);
+              this.onWrongAttempt();
+            }
+          });
+          container.appendChild(btn);
+        });
+      },
+
+      onCorrect() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+
+        Progress.completeItem(
+          this.state.familyName || 'default',
+          `letters-${this.mode}`,
+          this.currentIndex.toString()
+        );
+
+        document.getElementById('next-btn').style.display = 'inline-flex';
+      },
+
+      onWrongAttempt() {
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl' ? 'נסי שוב!' : 'נסה שוב!';
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+      },
+
+      nextQuestion() {
+        this.currentIndex++;
+        this.showQuestion();
+      },
+
+      showModeSelect() {
+        document.getElementById('activity-area').style.display = 'none';
+        document.getElementById('mode-select').style.display = 'block';
+        document.getElementById('page-title').textContent = 'אותיות';
+      },
+
+      showComplete() {
+        const g = this.state.gender || 'boy';
+        const activityArea = document.querySelector('#activity-area .activity-content');
+        activityArea.innerHTML = `
+          <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את כל האותיות! כל הכבוד! 🌟</h2>
+            <div class="nav-controls">
+              <button class="btn btn-primary" onclick="LettersActivity.showModeSelect()">
+                תרגול נוסף
+              </button>
+              <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
+                חזרה לתפריט
+              </button>
+            </div>
+          </div>
+        `;
+      },
+
+      updateProgress() {
+        const pct = Math.round((this.currentIndex / this.questions.length) * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+      },
+
+      shuffleArray(arr) {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => LettersActivity.init());
+  </script>
+
+</body>
+</html>

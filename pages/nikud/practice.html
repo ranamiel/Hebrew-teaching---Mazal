@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>התנסות בקריאה פשוטה</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body>
+
+  <div class="container activity-page">
+    <div class="activity-header">
+      <h1>התנסות בקריאה פשוטה</h1>
+      <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
+    </div>
+
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+
+    <div class="activity-content" id="activity-area">
+      <!-- Phase 1: Letter + Nikud combinations -->
+      <div id="combo-section">
+        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); text-align: center; margin-bottom: 20px;"></p>
+
+        <div class="word-display">
+          <div class="word word-nikud" id="combo-display" style="font-size: 5rem;"></div>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <button class="btn btn-secondary" id="play-combo-btn">
+            🔊 <span id="play-combo-text">שמע איך קוראים</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Phase 2: Words with nikud - count syllables -->
+      <div id="word-section" style="display: none;">
+        <p id="word-instruction" style="font-size: 1.2rem; color: var(--text-medium); text-align: center; margin-bottom: 20px;"></p>
+
+        <div class="word-display">
+          <div class="word word-nikud" id="nikud-word" style="font-size: 4rem;"></div>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <button class="btn btn-secondary" id="play-word-btn">
+            🔊 <span id="play-word-text">שמע את המילה</span>
+          </button>
+        </div>
+
+        <p id="syllable-question" style="font-size: 1.2rem; text-align: center; color: var(--text-dark); margin: 15px 0;"></p>
+        <div style="display: flex; justify-content: center; gap: 12px;" id="syllable-answers"></div>
+      </div>
+
+      <div id="feedback-area"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-primary" id="next-btn" onclick="NikudPractice.next()">
+          הבא →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/speech.js"></script>
+  <script src="../../js/progress.js"></script>
+  <script>
+    const NikudPractice = {
+      combos: [],
+      words: [],
+      phase: 'combos', // 'combos' or 'words'
+      currentIndex: 0,
+      state: {},
+
+      async init() {
+        const saved = localStorage.getItem('hebrewReadingState');
+        if (saved) this.state = JSON.parse(saved);
+
+        try {
+          const res = await fetch('../../data/nikud.json');
+          const data = await res.json();
+          this.combos = data.practice;
+          this.words = data.practiceWords;
+        } catch (e) {
+          console.error('Could not load nikud data:', e);
+          return;
+        }
+
+        this.updateGenderText();
+        this.showCurrent();
+      },
+
+      updateGenderText() {
+        const g = this.state.gender || 'boy';
+        document.getElementById('instruction-text').textContent =
+          g === 'girl' ? 'קראי את האות עם הניקוד' : 'קרא את האות עם הניקוד';
+        document.getElementById('play-combo-text').textContent =
+          g === 'girl' ? 'שמעי איך קוראים' : 'שמע איך קוראים';
+        document.getElementById('word-instruction').textContent =
+          g === 'girl' ? 'קראי את המילה וספרי כמה הברות יש בה' : 'קרא את המילה וספור כמה הברות יש בה';
+        document.getElementById('play-word-text').textContent =
+          g === 'girl' ? 'שמעי את המילה' : 'שמע את המילה';
+      },
+
+      showCurrent() {
+        document.getElementById('feedback-area').innerHTML = '';
+
+        if (this.phase === 'combos') {
+          this.showCombo();
+        } else {
+          this.showWord();
+        }
+      },
+
+      showCombo() {
+        if (this.currentIndex >= this.combos.length) {
+          // Move to words phase
+          this.phase = 'words';
+          this.currentIndex = 0;
+          document.getElementById('combo-section').style.display = 'none';
+          document.getElementById('word-section').style.display = 'block';
+
+          const g = this.state.gender || 'boy';
+          const msg = g === 'girl' ? 'יופי! עכשיו בואי נקרא מילים שלמות' : 'יופי! עכשיו בוא נקרא מילים שלמות';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback info">${msg}</div>`;
+
+          this.showWord();
+          return;
+        }
+
+        const combo = this.combos[this.currentIndex];
+        document.getElementById('combo-display').textContent = combo.text;
+
+        document.getElementById('play-combo-btn').onclick = () => {
+          Speech.playAudio(combo.audio).catch(() => {
+            Speech.speak(combo.reading);
+          });
+        };
+
+        this.updateProgress();
+      },
+
+      showWord() {
+        if (this.currentIndex >= this.words.length) {
+          this.showComplete();
+          return;
+        }
+
+        const word = this.words[this.currentIndex];
+        document.getElementById('nikud-word').textContent = word.word;
+        document.getElementById('next-btn').style.display = 'none';
+
+        const g = this.state.gender || 'boy';
+        document.getElementById('syllable-question').textContent =
+          'כמה הברות יש במילה?';
+
+        // Answer buttons
+        const container = document.getElementById('syllable-answers');
+        container.innerHTML = '';
+        for (let i = 1; i <= 4; i++) {
+          const btn = document.createElement('button');
+          btn.className = 'syllable-block';
+          btn.textContent = i;
+          btn.style.minWidth = '60px';
+          btn.addEventListener('click', () => this.checkSyllableCount(i, word.syllableCount));
+          container.appendChild(btn);
+        }
+
+        document.getElementById('play-word-btn').onclick = () => {
+          Speech.playAudio(word.audio).catch(() => {
+            Speech.speak(word.word);
+          });
+        };
+
+        this.updateProgress();
+      },
+
+      checkSyllableCount(answer, correct) {
+        const g = this.state.gender || 'boy';
+
+        if (answer === correct) {
+          const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+
+          Progress.completeItem(
+            this.state.familyName || 'default',
+            'nikud-practice',
+            `word-${this.currentIndex}`
+          );
+
+          document.getElementById('next-btn').style.display = 'inline-flex';
+
+          // Mark correct button
+          const buttons = document.getElementById('syllable-answers').children;
+          for (const btn of buttons) {
+            if (parseInt(btn.textContent) === answer) {
+              btn.classList.add('correct');
+            }
+          }
+        } else {
+          const msg = g === 'girl' ? 'נסי שוב!' : 'נסה שוב!';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+        }
+      },
+
+      next() {
+        this.currentIndex++;
+        this.showCurrent();
+      },
+
+      showComplete() {
+        document.getElementById('activity-area').innerHTML = `
+          <div style="text-align: center; padding: 50px 20px;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את התרגול! כל הכבוד! 🌟</h2>
+            <button class="btn btn-primary" onclick="window.location.href='../../index.html'">
+              חזרה לתפריט
+            </button>
+          </div>
+        `;
+      },
+
+      updateProgress() {
+        const totalItems = this.combos.length + this.words.length;
+        let completed = 0;
+        if (this.phase === 'combos') {
+          completed = this.currentIndex;
+        } else {
+          completed = this.combos.length + this.currentIndex;
+        }
+        const pct = Math.round((completed / totalItems) * 100);
+        document.getElementById('progress-fill').style.width = pct + '%';
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => NikudPractice.init());
+  </script>
+
+</body>
+</html>

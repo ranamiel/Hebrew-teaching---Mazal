@@ -1,0 +1,31 @@
+{
+  "syllables": [
+    { "word": "גְּלִידָה", "plain": "גלידה", "syllables": ["גְּלִי", "דָה"], "audio": "audio/words/glida.mp3" },
+    { "word": "חֲבִיתָה", "plain": "חביתה", "syllables": ["חֲבִי", "תָה"], "audio": "audio/words/havita.mp3" },
+    { "word": "חָבֵר", "plain": "חבר", "syllables": ["חָ", "בֵר"], "audio": "audio/words/haver.mp3" },
+    { "word": "מְכוֹנִית", "plain": "מכונית", "syllables": ["מְכוֹ", "נִית"], "audio": "audio/words/mekhonit.mp3" },
+    { "word": "אִמָּא", "plain": "אמא", "syllables": ["אִ", "מָּא"], "audio": "audio/words/ima.mp3" },
+    { "word": "תְּמוּנָה", "plain": "תמונה", "syllables": ["תְּמוּ", "נָה"], "audio": "audio/words/tmuna.mp3" },
+    { "word": "בַּלּוֹן", "plain": "בלון", "syllables": ["בַּ", "לּוֹן"], "audio": "audio/words/balon.mp3" },
+    { "word": "שׁוֹקוֹלָד", "plain": "שוקולד", "syllables": ["שׁוֹ", "קוֹ", "לָד"], "audio": "audio/words/shokolad.mp3" },
+    { "word": "פַּרְפַּר", "plain": "פרפר", "syllables": ["פַּרְ", "פַּר"], "audio": "audio/words/parpar.mp3" },
+    { "word": "תַּפּוּחַ", "plain": "תפוח", "syllables": ["תַּ", "פּוּחַ"], "audio": "audio/words/tapuach.mp3" },
+    { "word": "אֲרוּחָה", "plain": "ארוחה", "syllables": ["אֲרוּ", "חָה"], "audio": "audio/words/arucha.mp3" },
+    { "word": "יַלְדָה", "plain": "ילדה", "syllables": ["יַלְ", "דָה"], "audio": "audio/words/yalda.mp3" },
+    { "word": "סַבְתָּא", "plain": "סבתא", "syllables": ["סַבְ", "תָּא"], "audio": "audio/words/savta.mp3" },
+    { "word": "מִטְרִיָּה", "plain": "מטריה", "syllables": ["מִטְ", "רִ", "יָּה"], "audio": "audio/words/mitriya.mp3" },
+    { "word": "כַּדּוּר", "plain": "כדור", "syllables": ["כַּ", "דּוּר"], "audio": "audio/words/kadur.mp3" }
+  ],
+  "combinations": [
+    { "word": "פִּטְרִיָּה", "plain": "פטריה", "parts": ["פִּט", "ר", "יָּה"], "audio": "audio/words/pitriya.mp3" },
+    { "word": "מִסְפָּרַיִם", "plain": "מספריים", "parts": ["מִסְ", "פָּ", "רַ", "יִם"], "audio": "audio/words/misparayim.mp3" },
+    { "word": "מִשְׁקָפַיִם", "plain": "משקפיים", "parts": ["מִשְׁ", "קָ", "פַ", "יִם"], "audio": "audio/words/mishkafayim.mp3" },
+    { "word": "תִּרְגּוּם", "plain": "תרגום", "parts": ["תִּרְ", "גּוּם"], "audio": "audio/words/tirgum.mp3" },
+    { "word": "מַחְשֵׁב", "plain": "מחשב", "parts": ["מַחְ", "שֵׁב"], "audio": "audio/words/machshev.mp3" },
+    { "word": "מִשְׁפָּחָה", "plain": "משפחה", "parts": ["מִשְׁ", "פָּ", "חָה"], "audio": "audio/words/mishpacha.mp3" },
+    { "word": "שַׁלְהֶבֶת", "plain": "שלהבת", "parts": ["שַׁלְ", "הֶ", "בֶת"], "audio": "audio/words/shalhevet.mp3" },
+    { "word": "מַדְרֵגוֹת", "plain": "מדרגות", "parts": ["מַדְ", "רֵ", "גוֹת"], "audio": "audio/words/madregot.mp3" },
+    { "word": "אַרְנָבוֹן", "plain": "ארנבון", "parts": ["אַרְ", "נָ", "בוֹן"], "audio": "audio/words/arnavon.mp3" },
+    { "word": "סַנְדְּוִיץ׳", "plain": "סנדוויץ'", "parts": ["סַנְ", "דְּ", "וִיץ׳"], "audio": "audio/words/sandwich.mp3" }
+  ]
+}
