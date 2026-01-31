@@ -99,33 +99,16 @@ const App = {
   },
 
   init() {
-    this.loadState();
     this.bindEvents();
 
-    // וידוא שהמצב השמור תקין - אם חסרים נתונים, חזרה לשלב המתאים
-    const page = this.validateStateForPage(this.state.currentPage);
-    this.showPage(page);
-  },
-
-  // בדיקה שכל הנתונים הנדרשים קיימים לפני הצגת עמוד
-  validateStateForPage(page) {
-    if (page === 'dashboard') {
-      if (!this.state.familyName || !this.state.gender || !this.state.childName) {
-        // חסרים נתונים - חזרה להתחלה
-        return 'welcome';
-      }
-    }
-    if (page === 'child-name') {
-      if (!this.state.familyName || !this.state.gender) {
-        return 'welcome';
-      }
-    }
-    if (page === 'gender-select') {
-      if (!this.state.familyName) {
-        return 'welcome';
-      }
-    }
-    return page;
+    // תמיד מתחילים מדף הכניסה - המשתמש עובר את כל השלבים בכל ביקור
+    // איפוס נתוני הכניסה (התקדמות נשמרת בנפרד ב-progress)
+    this.state.familyName = '';
+    this.state.childName = '';
+    this.state.gender = null;
+    this.state.currentPage = 'welcome';
+    this.saveState();
+    this.showPage('welcome');
   },
 
   saveState() {
