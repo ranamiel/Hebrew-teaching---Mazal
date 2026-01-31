@@ -5,6 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>חלוקה להברות</title>
   <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .word-image {
+      font-size: 8rem;
+      text-align: center;
+      margin: 10px 0 20px;
+      user-select: none;
+      animation: bounceIn 0.5s ease;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .syllable-boxes {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 25px 0;
+      direction: ltr;
+    }
+
+    .syllable-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 4px solid var(--warm-peach);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: transparent;
+      user-select: none;
+    }
+
+    .syllable-box:hover {
+      border-color: var(--warm-orange);
+      transform: scale(1.1);
+    }
+
+    .syllable-box.filled {
+      background: var(--warm-orange);
+      border-color: var(--warm-red);
+      color: var(--white);
+      transform: scale(1.05);
+    }
+
+    .syllable-box.correct {
+      background: #4CAF50;
+      border-color: #388E3C;
+      color: var(--white);
+    }
+
+    .syllable-box.incorrect {
+      background: var(--warm-coral);
+      border-color: var(--warm-red);
+      color: var(--white);
+      animation: shake 0.4s ease;
+    }
+
+    .count-display {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text-medium);
+      margin: 10px 0;
+      min-height: 2rem;
+    }
+
+    .syllable-reveal {
+      text-align: center;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--warm-red);
+      margin: 15px 0;
+      direction: rtl;
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 600px) {
+      .word-image { font-size: 6rem; }
+      .syllable-box { width: 50px; height: 50px; font-size: 1.2rem; }
+    }
+  </style>
 </head>
 <body>
 
@@ -26,17 +115,31 @@
     </div>
 
     <div class="activity-content" id="activity-area">
-      <div class="word-display" id="word-display">
-        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 20px;"></p>
-        <div class="word" id="current-word"></div>
+      <div class="word-display">
+        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 10px;"></p>
+
+        <!-- תמונה של המילה במקום טקסט -->
+        <div class="word-image" id="word-image"></div>
+
         <button class="btn btn-secondary" id="play-word-btn" style="margin-bottom: 20px;">
           🔊 <span id="play-btn-text"></span>
         </button>
       </div>
 
-      <div class="syllable-container" id="syllable-container"></div>
+      <!-- משבצות לספירת הברות -->
+      <div class="syllable-boxes" id="syllable-boxes"></div>
+      <div class="count-display" id="count-display"></div>
+
+      <div style="text-align: center;">
+        <button class="btn btn-primary" id="check-btn" style="display: none;">
+          <span id="check-btn-text">בדוק!</span>
+        </button>
+      </div>
 
       <div id="feedback-area"></div>
+
+      <!-- הצגת ההברות אחרי תשובה נכונה -->
+      <div class="syllable-reveal" id="syllable-reveal" style="display: none;"></div>
 
       <div class="nav-controls">
         <button class="btn btn-primary" id="next-btn" style="display: none;">
@@ -54,6 +157,8 @@
       words: [],
       currentIndex: 0,
       currentDifficulty: 'easy',
+      selectedCount: 0,
+      maxBoxes: 5,
       state: {},
 
       async init() {
@@ -79,16 +184,25 @@
       updateGenderText() {
         const g = this.state.gender || 'boy';
         const texts = {
-          boy: { instruction: 'הקשב למילה ולחץ על ההברות בסדר הנכון', playBtn: 'שמע את המילה' },
-          girl: { instruction: 'הקשיבי למילה ולחצי על ההברות בסדר הנכון', playBtn: 'שמעי את המילה' }
+          boy: {
+            instruction: 'הקשב למילה. כמה הברות שמעת?',
+            playBtn: 'שמע שוב',
+            checkBtn: 'בדוק!',
+          },
+          girl: {
+            instruction: 'הקשיבי למילה. כמה הברות שמעת?',
+            playBtn: 'שמעי שוב',
+            checkBtn: 'בדקי!',
+          }
         };
         document.getElementById('instruction-text').textContent = texts[g].instruction;
         document.getElementById('play-btn-text').textContent = texts[g].playBtn;
+        document.getElementById('check-btn-text').textContent = texts[g].checkBtn;
       },
 
       setDifficulty(diff) {
         this.currentDifficulty = diff;
-        this.words = this.allWords[diff] || [];
+        this.words = this.shuffleArray([...(this.allWords[diff] || [])]);
         this.currentIndex = 0;
 
         document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
@@ -107,43 +221,72 @@
         }
 
         const word = this.words[this.currentIndex];
-        document.getElementById('current-word').textContent = word.word;
+
+        // הצגת תמונה במקום טקסט
+        document.getElementById('word-image').textContent = word.emoji || '❓';
+
+        // איפוס
         document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('check-btn').style.display = 'none';
         document.getElementById('feedback-area').innerHTML = '';
+        document.getElementById('syllable-reveal').style.display = 'none';
+        document.getElementById('count-display').textContent = '';
+        this.selectedCount = 0;
 
-        const container = document.getElementById('syllable-container');
-        container.innerHTML = '';
-
-        const shuffled = this.shuffleArray([...word.syllables]);
-        shuffled.forEach((syl) => {
-          const block = document.createElement('button');
-          block.className = 'syllable-block';
-          block.textContent = syl;
-          block.addEventListener('click', () => this.handleSyllableClick(block, syl));
-          container.appendChild(block);
-        });
-
-        this.selectedOrder = [];
+        // בניית משבצות
+        this.buildBoxes();
         this.updateProgress();
+
+        // השמעה אוטומטית
+        this.playCurrentWord();
       },
 
-      selectedOrder: [],
+      buildBoxes() {
+        const container = document.getElementById('syllable-boxes');
+        container.innerHTML = '';
 
-      handleSyllableClick(block, syllable) {
-        if (block.classList.contains('highlighted')) return;
+        for (let i = 1; i <= this.maxBoxes; i++) {
+          const box = document.createElement('button');
+          box.className = 'syllable-box';
+          box.textContent = i;
+          box.dataset.num = i;
+          box.addEventListener('click', () => this.selectCount(i));
+          container.appendChild(box);
+        }
+      },
 
-        block.classList.add('highlighted');
-        this.selectedOrder.push(syllable);
+      selectCount(num) {
+        // לא לאפשר שינוי אחרי בדיקה
+        if (document.querySelector('.syllable-box.correct') || document.querySelector('.syllable-box.incorrect')) return;
 
-        const word = this.words[this.currentIndex];
+        this.selectedCount = num;
 
-        if (this.selectedOrder.length === word.syllables.length) {
-          const correct = this.selectedOrder.every((s, i) => s === word.syllables[i]);
-          if (correct) {
-            this.onCorrect();
+        // עדכון ויזואלי - מילוי עד למספר הנבחר
+        document.querySelectorAll('.syllable-box').forEach(box => {
+          const boxNum = parseInt(box.dataset.num);
+          if (boxNum <= num) {
+            box.classList.add('filled');
           } else {
-            this.onIncorrect();
+            box.classList.remove('filled');
           }
+        });
+
+        const g = this.state.gender || 'boy';
+        const countWord = num === 1 ? 'הברה אחת' : `${num} הברות`;
+        document.getElementById('count-display').textContent = countWord;
+
+        // הצגת כפתור בדיקה
+        document.getElementById('check-btn').style.display = 'inline-flex';
+      },
+
+      checkAnswer() {
+        const word = this.words[this.currentIndex];
+        const correctCount = word.syllableCount || word.syllables.length;
+
+        if (this.selectedCount === correctCount) {
+          this.onCorrect();
+        } else {
+          this.onIncorrect(correctCount);
         }
       },
 
@@ -152,10 +295,19 @@
         const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
         document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
 
-        document.querySelectorAll('.syllable-block').forEach(b => {
-          b.classList.remove('highlighted');
+        // צביעה ירוקה
+        document.querySelectorAll('.syllable-box.filled').forEach(b => {
+          b.classList.remove('filled');
           b.classList.add('correct');
         });
+
+        document.getElementById('check-btn').style.display = 'none';
+
+        // הצגת ההברות
+        const word = this.words[this.currentIndex];
+        const reveal = document.getElementById('syllable-reveal');
+        reveal.textContent = word.word + ' = ' + word.syllables.join(' - ');
+        reveal.style.display = 'block';
 
         Progress.completeItem(
           this.state.familyName || 'default',
@@ -166,33 +318,45 @@
         document.getElementById('next-btn').style.display = 'inline-flex';
       },
 
-      onIncorrect() {
+      onIncorrect(correctCount) {
         const g = this.state.gender || 'boy';
-        const word = this.words[this.currentIndex];
         const msg = g === 'girl' ? 'לא בדיוק... נסי שוב!' : 'לא בדיוק... נסה שוב!';
-        const feedbackArea = document.getElementById('feedback-area');
-        feedbackArea.innerHTML = `<div class="feedback error">${msg}</div>`;
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
 
-        const hint = `הסדר הנכון: ${word.syllables.join(' - ')}`;
-        setTimeout(() => {
-          feedbackArea.innerHTML += `<div class="feedback info">${hint}</div>`;
-        }, 800);
+        // צביעה אדומה
+        document.querySelectorAll('.syllable-box.filled').forEach(b => {
+          b.classList.remove('filled');
+          b.classList.add('incorrect');
+        });
 
+        document.getElementById('check-btn').style.display = 'none';
+
+        // איפוס אחרי השהיה
         setTimeout(() => {
-          this.selectedOrder = [];
-          document.querySelectorAll('.syllable-block').forEach(b => {
-            b.classList.remove('highlighted');
+          this.selectedCount = 0;
+          document.querySelectorAll('.syllable-box').forEach(b => {
+            b.classList.remove('filled', 'incorrect');
           });
-          feedbackArea.innerHTML = '';
-        }, 3000);
+          document.getElementById('feedback-area').innerHTML = '';
+          document.getElementById('count-display').textContent = '';
+        }, 2000);
+      },
+
+      playCurrentWord() {
+        const word = this.words[this.currentIndex];
+        if (!word) return;
+        Speech.playAudio(word.audio).catch(() => {
+          Speech.speak(word.plain);
+        });
       },
 
       showComplete() {
         const g = this.state.gender || 'boy';
+        const finishMsg = g === 'girl' ? 'סיימת את כל המילים ברמה הזו! כל הכבוד!' : 'סיימת את כל המילים ברמה הזו! כל הכבוד!';
         document.getElementById('activity-area').innerHTML = `
           <div style="text-align: center; padding: 50px 20px;">
             <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
-            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את כל המילים ברמה הזו! כל הכבוד! 🌟</h2>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">${finishMsg} 🌟</h2>
             <button class="btn btn-primary" onclick="window.location.reload()">
               רוצה לנסות רמה אחרת
             </button>
@@ -215,10 +379,11 @@
         });
 
         document.getElementById('play-word-btn').addEventListener('click', () => {
-          const word = this.words[this.currentIndex];
-          Speech.playAudio(word.audio).catch(() => {
-            Speech.speak(word.plain);
-          });
+          this.playCurrentWord();
+        });
+
+        document.getElementById('check-btn').addEventListener('click', () => {
+          this.checkAnswer();
         });
       },
 

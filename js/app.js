@@ -1,6 +1,8 @@
 /* === Hebrew Reading Site - Main Application === */
 
 const App = {
+  allowedFamilies: ['עמיאל'],
+
   state: {
     familyName: '',
     childName: '',
@@ -126,11 +128,24 @@ const App = {
         e.preventDefault();
         const input = document.getElementById('family-name-input');
         const name = input.value.trim();
-        if (name) {
-          this.state.familyName = name;
-          this.saveState();
-          this.showPage('gender-select');
+        const errorEl = document.getElementById('family-name-error');
+
+        if (!name) return;
+
+        if (!this.allowedFamilies.includes(name)) {
+          if (errorEl) {
+            errorEl.textContent = 'שם המשפחה לא נמצא. נסו שוב!';
+            errorEl.style.display = 'block';
+          }
+          input.value = '';
+          input.focus();
+          return;
         }
+
+        if (errorEl) errorEl.style.display = 'none';
+        this.state.familyName = name;
+        this.saveState();
+        this.showPage('gender-select');
       });
     }
 

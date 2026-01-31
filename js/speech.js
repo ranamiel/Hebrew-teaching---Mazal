@@ -87,11 +87,11 @@ const Speech = {
       audio.onended = resolve;
       audio.onerror = () => {
         console.warn(`Audio not found: ${src} - using TTS fallback`);
-        resolve(); // Resolve anyway, don't block
+        reject(new Error('Audio not found'));
       };
       audio.play().catch(() => {
         console.warn(`Could not play audio: ${src}`);
-        resolve();
+        reject(new Error('Could not play audio'));
       });
     });
   },
