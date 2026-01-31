@@ -8,7 +8,7 @@
 </head>
 <body>
 
-  <!-- === Welcome Page === -->
+  <!-- === שלב 1: עמוד כניסה === -->
   <div id="welcome" class="page active">
     <div class="welcome-wrapper">
       <h1 class="welcome-title">ברוכים וברוכות הבאים</h1>
@@ -28,7 +28,7 @@
     </div>
   </div>
 
-  <!-- === Gender Selection === -->
+  <!-- === שלב 2: בחירת מין === -->
   <div id="gender-select" class="page">
     <div class="gender-selection">
       <h1 class="gender-title">שלום למשפחת <span id="gender-family-name"></span>!</h1>
@@ -49,19 +49,40 @@
     </div>
   </div>
 
-  <!-- === Dashboard - Topic Selection === -->
+  <!-- === שלב 3: שם הילד/ה === -->
+  <div id="child-name" class="page">
+    <div class="welcome-wrapper">
+      <h1 class="welcome-title" id="child-name-title">מה השם של הבן?</h1>
+
+      <form id="child-name-form" class="family-input-group">
+        <input
+          type="text"
+          id="child-name-input"
+          placeholder="השם הפרטי"
+          autocomplete="off"
+          required
+        >
+        <button type="submit" class="btn btn-primary">קדימה!</button>
+      </form>
+
+      <button class="btn btn-back" data-navigate="gender-select" style="margin-top: 15px;">← חזרה</button>
+    </div>
+  </div>
+
+  <!-- === שלב 4: דשבורד === -->
   <div id="dashboard" class="page">
     <div class="container">
       <div class="dashboard-header">
         <h1>משפחת <span id="dashboard-family-name"></span></h1>
-        <p id="dashboard-greeting"></p>
-        <p>מה רוצים ללמוד היום?</p>
+        <p id="dashboard-greeting" style="font-size: 1.3rem;"></p>
+        <p style="margin-top: 8px;">האותיות שלך: <span id="child-name-letters" style="font-size: 1.4rem; font-weight: 700; color: var(--warm-orange); letter-spacing: 6px;"></span></p>
+        <p style="margin-top: 15px;">מה רוצים ללמוד היום?</p>
       </div>
 
       <div class="topics-grid">
 
-        <!-- Topic 1: Phonological Awareness -->
-        <div class="topic-card">
+        <!-- נושא 1: מודעות פונולוגית (פתוח תמיד) -->
+        <div class="topic-card" id="phonological-card">
           <h2>מודעות פונולוגית</h2>
           <p class="topic-desc">לומדים להכיר את הצלילים של השפה העברית</p>
           <div class="subtopic-list">
@@ -73,35 +94,45 @@
               <span class="subtopic-icon">🔗</span>
               <span>חלוקה לצירופים</span>
             </button>
+          </div>
+        </div>
+
+        <!-- נושא 1ב: אותיות (במקביל למודעות פונולוגית) -->
+        <div class="topic-card" id="letters-card">
+          <h2>אותיות</h2>
+          <p class="topic-desc">לומדים להכיר את האותיות - קודם כל האותיות של השם שלך!</p>
+          <div class="subtopic-list">
             <button class="subtopic-btn" data-activity="letters">
               <span class="subtopic-icon">✏️</span>
-              <span>אותיות - זיהוי, שיום וצליל</span>
+              <span>זיהוי, שיום וצליל</span>
             </button>
           </div>
         </div>
 
-        <!-- Topic 2: Nikud -->
-        <div class="topic-card">
+        <!-- נושא 2: ניקוד (נעול עד שיש התקדמות בשלב 1) -->
+        <div class="topic-card topic-locked" id="nikud-card">
+          <div class="lock-overlay">🔒 צריך קודם להתאמן במודעות פונולוגית או באותיות</div>
           <h2>לימוד הניקוד</h2>
           <p class="topic-desc">לומדים את סימני הניקוד ואיך לקרוא אותם</p>
           <div class="subtopic-list">
-            <button class="subtopic-btn" data-activity="nikud-coding">
+            <button class="subtopic-btn locked" data-activity="nikud-coding">
               <span class="subtopic-icon">📖</span>
               <span>קידוד הניקוד</span>
             </button>
-            <button class="subtopic-btn" data-activity="nikud-practice">
+            <button class="subtopic-btn locked" data-activity="nikud-practice">
               <span class="subtopic-icon">📝</span>
               <span>התנסות בקריאה פשוטה</span>
             </button>
           </div>
         </div>
 
-        <!-- Topic 3: Reading -->
-        <div class="topic-card">
+        <!-- נושא 3: קריאה (נעול עד שיש התקדמות בניקוד) -->
+        <div class="topic-card topic-locked" id="reading-card">
+          <div class="lock-overlay">🔒 צריך קודם ללמוד ניקוד</div>
           <h2>קריאת טקסטים</h2>
           <p class="topic-desc">קוראים טקסטים פשוטים בקול רם</p>
           <div class="subtopic-list">
-            <button class="subtopic-btn" data-activity="reading">
+            <button class="subtopic-btn locked" data-activity="reading">
               <span class="subtopic-icon">📚</span>
               <span>טקסטים פשוטים לקריאה</span>
             </button>

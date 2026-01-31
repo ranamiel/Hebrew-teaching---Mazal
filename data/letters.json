@@ -1,27 +1,27 @@
 {
   "letters": [
-    { "letter": "א", "name": "אָלֶף", "sound": "א (שקטה / אֵ)", "audio": "audio/letters/alef.mp3" },
-    { "letter": "ב", "name": "בֵּית", "sound": "בּ / ב (ב/ו)", "audio": "audio/letters/bet.mp3" },
-    { "letter": "ג", "name": "גִּימֶל", "sound": "גּ", "audio": "audio/letters/gimel.mp3" },
-    { "letter": "ד", "name": "דָּלֶת", "sound": "דּ", "audio": "audio/letters/dalet.mp3" },
-    { "letter": "ה", "name": "הֵא", "sound": "ה", "audio": "audio/letters/he.mp3" },
-    { "letter": "ו", "name": "וָו", "sound": "ו", "audio": "audio/letters/vav.mp3" },
-    { "letter": "ז", "name": "זַיִן", "sound": "ז", "audio": "audio/letters/zayin.mp3" },
-    { "letter": "ח", "name": "חֵית", "sound": "ח", "audio": "audio/letters/chet.mp3" },
-    { "letter": "ט", "name": "טֵית", "sound": "ט", "audio": "audio/letters/tet.mp3" },
-    { "letter": "י", "name": "יוֹד", "sound": "י", "audio": "audio/letters/yod.mp3" },
-    { "letter": "כ", "name": "כָּף", "sound": "כּ / כ (כ/ח)", "audio": "audio/letters/kaf.mp3" },
-    { "letter": "ל", "name": "לָמֶד", "sound": "ל", "audio": "audio/letters/lamed.mp3" },
-    { "letter": "מ", "name": "מֵם", "sound": "מ", "audio": "audio/letters/mem.mp3" },
-    { "letter": "נ", "name": "נוּן", "sound": "נ", "audio": "audio/letters/nun.mp3" },
-    { "letter": "ס", "name": "סָמֶך", "sound": "ס", "audio": "audio/letters/samekh.mp3" },
-    { "letter": "ע", "name": "עַיִן", "sound": "ע (שקטה / אָ)", "audio": "audio/letters/ayin.mp3" },
-    { "letter": "פ", "name": "פֵּא", "sound": "פּ / פ (פ/ף)", "audio": "audio/letters/pe.mp3" },
-    { "letter": "צ", "name": "צָדִי", "sound": "צ", "audio": "audio/letters/tsadi.mp3" },
-    { "letter": "ק", "name": "קוֹף", "sound": "ק", "audio": "audio/letters/kof.mp3" },
-    { "letter": "ר", "name": "רֵישׁ", "sound": "ר", "audio": "audio/letters/resh.mp3" },
-    { "letter": "ש", "name": "שִׁין", "sound": "שׁ / שׂ", "audio": "audio/letters/shin.mp3" },
-    { "letter": "ת", "name": "תָּו", "sound": "ת", "audio": "audio/letters/tav.mp3" }
+    { "letter": "א", "name": "אָלֶף", "sound": "א (שקטה / אֵ)", "audio": "audio/letters/alef.mp3", "group": 5 },
+    { "letter": "ב", "name": "בֵּית", "sound": "בּ / ב (ב/ו)", "audio": "audio/letters/bet.mp3", "group": 3 },
+    { "letter": "ג", "name": "גִּימֶל", "sound": "גּ", "audio": "audio/letters/gimel.mp3", "group": 3 },
+    { "letter": "ד", "name": "דָּלֶת", "sound": "דּ", "audio": "audio/letters/dalet.mp3", "group": 2 },
+    { "letter": "ה", "name": "הֵא", "sound": "ה", "audio": "audio/letters/he.mp3", "group": 5 },
+    { "letter": "ו", "name": "וָו", "sound": "ו", "audio": "audio/letters/vav.mp3", "group": 5 },
+    { "letter": "ז", "name": "זַיִן", "sound": "ז", "audio": "audio/letters/zayin.mp3", "group": 3 },
+    { "letter": "ח", "name": "חֵית", "sound": "ח", "audio": "audio/letters/chet.mp3", "group": 4 },
+    { "letter": "ט", "name": "טֵית", "sound": "ט", "audio": "audio/letters/tet.mp3", "group": 3 },
+    { "letter": "י", "name": "יוֹד", "sound": "י", "audio": "audio/letters/yod.mp3", "group": 5 },
+    { "letter": "כ", "name": "כָּף", "sound": "כּ / כ (כ/ח)", "audio": "audio/letters/kaf.mp3", "group": 4 },
+    { "letter": "ל", "name": "לָמֶד", "sound": "ל", "audio": "audio/letters/lamed.mp3", "group": 2 },
+    { "letter": "מ", "name": "מֵם", "sound": "מ", "audio": "audio/letters/mem.mp3", "group": 2 },
+    { "letter": "נ", "name": "נוּן", "sound": "נ", "audio": "audio/letters/nun.mp3", "group": 2 },
+    { "letter": "ס", "name": "סָמֶך", "sound": "ס", "audio": "audio/letters/samekh.mp3", "group": 3 },
+    { "letter": "ע", "name": "עַיִן", "sound": "ע (שקטה / אָ)", "audio": "audio/letters/ayin.mp3", "group": 4 },
+    { "letter": "פ", "name": "פֵּא", "sound": "פּ / פ (פ/ף)", "audio": "audio/letters/pe.mp3", "group": 4 },
+    { "letter": "צ", "name": "צָדִי", "sound": "צ", "audio": "audio/letters/tsadi.mp3", "group": 4 },
+    { "letter": "ק", "name": "קוֹף", "sound": "ק", "audio": "audio/letters/kof.mp3", "group": 4 },
+    { "letter": "ר", "name": "רֵישׁ", "sound": "ר", "audio": "audio/letters/resh.mp3", "group": 2 },
+    { "letter": "ש", "name": "שִׁין", "sound": "שׁ / שׂ", "audio": "audio/letters/shin.mp3", "group": 2 },
+    { "letter": "ת", "name": "תָּו", "sound": "ת", "audio": "audio/letters/tav.mp3", "group": 2 }
   ],
   "finalForms": [
     { "letter": "ך", "baseLetter": "כ", "name": "כָּף סוֹפִית" },
@@ -29,5 +29,13 @@
     { "letter": "ן", "baseLetter": "נ", "name": "נוּן סוֹפִית" },
     { "letter": "ף", "baseLetter": "פ", "name": "פֵּא סוֹפִית" },
     { "letter": "ץ", "baseLetter": "צ", "name": "צָדִי סוֹפִית" }
-  ]
+  ],
+  "groupNames": {
+    "1": "אותיות השם",
+    "2": "אותיות עם צליל ברור ויחיד",
+    "3": "עוד אותיות ברורות",
+    "4": "אותיות שדורשות תשומת לב",
+    "5": "אמות הקריאה"
+  },
+  "groupOrder": [2, 3, 4, 5]
 }

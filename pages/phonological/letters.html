@@ -14,7 +14,7 @@
       <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
     </div>
 
-    <!-- Mode Selection -->
+    <!-- בחירת מצב -->
     <div id="mode-select" class="activity-content" style="text-align: center;">
       <h2 style="color: var(--warm-red); margin-bottom: 25px;">מה רוצים לתרגל?</h2>
       <div style="display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 0 auto;">
@@ -33,8 +33,13 @@
       </div>
     </div>
 
-    <!-- Activity Area -->
+    <!-- אזור פעילות -->
     <div id="activity-area" style="display: none;">
+      <!-- הצגת קבוצת אותיות נוכחית -->
+      <div id="group-info" style="text-align: center; margin-bottom: 10px;">
+        <span id="group-label" style="font-size: 0.95rem; color: var(--text-light); background: var(--bg-light-peach); padding: 4px 14px; border-radius: 8px;"></span>
+      </div>
+
       <div class="progress-bar">
         <div class="fill" id="progress-fill" style="width: 0%"></div>
       </div>
@@ -42,17 +47,17 @@
       <div class="activity-content">
         <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); text-align: center; margin-bottom: 20px;"></p>
 
-        <!-- For identify mode: show letter, ask to find it in grid -->
+        <!-- מצב זיהוי -->
         <div id="identify-area" style="display: none;">
           <div style="text-align: center; margin-bottom: 20px;">
             <button class="btn btn-secondary" id="play-letter-btn">
-              🔊 <span id="play-letter-text">שמע את שם האות</span>
+              🔊 <span id="play-letter-text"></span>
             </button>
           </div>
           <div class="letter-grid" id="letter-grid"></div>
         </div>
 
-        <!-- For name mode: show letter, ask for its name -->
+        <!-- מצב שיום -->
         <div id="name-area" style="display: none;">
           <div class="word-display">
             <div class="word" id="shown-letter" style="font-size: 6rem;"></div>
@@ -60,7 +65,7 @@
           <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="name-options"></div>
         </div>
 
-        <!-- For sound mode: show letter, ask for its sound -->
+        <!-- מצב צליל -->
         <div id="sound-area" style="display: none;">
           <div class="word-display">
             <div class="word" id="sound-letter" style="font-size: 6rem;"></div>
@@ -86,11 +91,13 @@
   <script src="../../js/progress.js"></script>
   <script>
     const LettersActivity = {
-      letters: [],
+      allLetters: [],
+      orderedLetters: [],
       currentIndex: 0,
       mode: null,
       questions: [],
       state: {},
+      groupNames: {},
 
       async init() {
         const saved = localStorage.getItem('hebrewReadingState');
@@ -99,47 +106,104 @@
         try {
           const res = await fetch('../../data/letters.json');
           const data = await res.json();
-          this.letters = data.letters;
+          this.allLetters = data.letters;
+          this.groupNames = data.groupNames;
         } catch (e) {
           console.error('Could not load letters:', e);
         }
+
+        // חישוב סדר פדגוגי לפי שם הילד/ה
+        this.orderedLetters = this.computeLetterOrder();
+      },
+
+      // חישוב סדר האותיות - אותיות השם קודם, אחר כך לפי קבוצה
+      computeLetterOrder() {
+        if (!this.state.childName) return [...this.allLetters];
+
+        const finalToRegular = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+        const seen = new Set();
+        const childLetters = [];
+
+        for (const char of this.state.childName) {
+          const normalized = finalToRegular[char] || char;
+          if (/[\u05D0-\u05EA]/.test(normalized) && !seen.has(normalized)) {
+            seen.add(normalized);
+            childLetters.push(normalized);
+          }
+        }
+
+        const childLetterSet = new Set(childLetters);
+
+        // אותיות השם בסדר שהן מופיעות בשם
+        const nameLetters = [];
+        for (const cl of childLetters) {
+          const found = this.allLetters.find(l => l.letter === cl);
+          if (found) nameLetters.push({ ...found, group: 1 });
+        }
+
+        // שאר האותיות לפי קבוצה פדגוגית
+        const remaining = this.allLetters
+          .filter(l => !childLetterSet.has(l.letter))
+          .sort((a, b) => a.group - b.group);
+
+        return [...nameLetters, ...remaining];
       },
 
       startMode(mode) {
         this.mode = mode;
         this.currentIndex = 0;
-        this.questions = this.shuffleArray([...this.letters]);
+        this.questions = [...this.orderedLetters]; // לא מערבבים - סדר פדגוגי
 
         document.getElementById('mode-select').style.display = 'none';
         document.getElementById('activity-area').style.display = 'block';
 
-        // Hide all mode areas
         document.getElementById('identify-area').style.display = 'none';
         document.getElementById('name-area').style.display = 'none';
         document.getElementById('sound-area').style.display = 'none';
 
         const g = this.state.gender || 'boy';
+        const texts = this.getGenderTexts();
 
         if (mode === 'identify') {
           document.getElementById('page-title').textContent = 'זיהוי אותיות';
           document.getElementById('identify-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent =
-            g === 'girl' ? 'הקשיבי לשם האות ולחצי עליה' : 'הקשב לשם האות ולחץ עליה';
-          document.getElementById('play-letter-text').textContent =
-            g === 'girl' ? 'שמעי את שם האות' : 'שמע את שם האות';
+          document.getElementById('instruction-text').textContent = texts.listenAndPress;
+          document.getElementById('play-letter-text').textContent = texts.hearLetterName;
         } else if (mode === 'name') {
           document.getElementById('page-title').textContent = 'שיום אותיות';
           document.getElementById('name-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent =
-            g === 'girl' ? 'מה השם של האות? בחרי את התשובה הנכונה' : 'מה השם של האות? בחר את התשובה הנכונה';
+          document.getElementById('instruction-text').textContent = texts.whatLetterName;
         } else if (mode === 'sound') {
           document.getElementById('page-title').textContent = 'צליל אותיות';
           document.getElementById('sound-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent =
-            g === 'girl' ? 'מה הצליל של האות? בחרי את התשובה הנכונה' : 'מה הצליל של האות? בחר את התשובה הנכונה';
+          document.getElementById('instruction-text').textContent = texts.whatLetterSound;
         }
 
         this.showQuestion();
+      },
+
+      getGenderTexts() {
+        const g = this.state.gender || 'boy';
+        // טעינת טקסטים מרוכזת מ-app.js
+        const allTexts = {
+          boy: {
+            listenAndPress: 'הקשב לשם האות ולחץ עליה',
+            hearLetterName: 'שמע את שם האות',
+            whatLetterName: 'מה השם של האות? בחר את התשובה הנכונה',
+            whatLetterSound: 'מה הצליל של האות? בחר את התשובה הנכונה',
+            excellent: 'מצוין! 🎉',
+            tryAgain: 'נסה שוב!',
+          },
+          girl: {
+            listenAndPress: 'הקשיבי לשם האות ולחצי עליה',
+            hearLetterName: 'שמעי את שם האות',
+            whatLetterName: 'מה השם של האות? בחרי את התשובה הנכונה',
+            whatLetterSound: 'מה הצליל של האות? בחרי את התשובה הנכונה',
+            excellent: 'מצוינת! 🎉',
+            tryAgain: 'נסי שוב!',
+          }
+        };
+        return allTexts[g];
       },
 
       showQuestion() {
@@ -154,6 +218,12 @@
 
         const letter = this.questions[this.currentIndex];
 
+        // הצגת שם הקבוצה
+        const groupLabel = document.getElementById('group-label');
+        const groupNum = letter.group;
+        const groupName = this.groupNames[groupNum] || '';
+        groupLabel.textContent = groupName;
+
         if (this.mode === 'identify') {
           this.showIdentifyQuestion(letter);
         } else if (this.mode === 'name') {
@@ -166,12 +236,11 @@
       },
 
       showIdentifyQuestion(target) {
-        // Create a grid with all letters, player needs to find the target
         const grid = document.getElementById('letter-grid');
         grid.innerHTML = '';
 
-        // Pick 8 random letters including the target
-        let options = this.shuffleArray([...this.letters]).slice(0, 8);
+        // 8 אותיות אקראיות כולל המטרה
+        let options = this.shuffleArray([...this.allLetters]).slice(0, 8);
         if (!options.find(l => l.letter === target.letter)) {
           options[0] = target;
           options = this.shuffleArray(options);
@@ -194,7 +263,6 @@
           grid.appendChild(cell);
         });
 
-        // Setup play button
         document.getElementById('play-letter-btn').onclick = () => {
           Speech.playAudio(target.audio).catch(() => {
             Speech.speak(target.name);
@@ -207,9 +275,8 @@
         const container = document.getElementById('name-options');
         container.innerHTML = '';
 
-        // Pick 3 random wrong names + correct
         let options = this.shuffleArray(
-          this.letters.filter(l => l.letter !== target.letter)
+          this.allLetters.filter(l => l.letter !== target.letter)
         ).slice(0, 3).map(l => l.name);
         options.push(target.name);
         options = this.shuffleArray(options);
@@ -239,7 +306,7 @@
         container.innerHTML = '';
 
         let options = this.shuffleArray(
-          this.letters.filter(l => l.letter !== target.letter)
+          this.allLetters.filter(l => l.letter !== target.letter)
         ).slice(0, 3).map(l => l.sound);
         options.push(target.sound);
         options = this.shuffleArray(options);
@@ -264,9 +331,9 @@
       },
 
       onCorrect() {
-        const g = this.state.gender || 'boy';
-        const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
-        document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
+        const texts = this.getGenderTexts();
+        document.getElementById('feedback-area').innerHTML =
+          `<div class="feedback success">${texts.excellent}</div>`;
 
         Progress.completeItem(
           this.state.familyName || 'default',
@@ -278,9 +345,9 @@
       },
 
       onWrongAttempt() {
-        const g = this.state.gender || 'boy';
-        const msg = g === 'girl' ? 'נסי שוב!' : 'נסה שוב!';
-        document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+        const texts = this.getGenderTexts();
+        document.getElementById('feedback-area').innerHTML =
+          `<div class="feedback error">${texts.tryAgain}</div>`;
       },
 
       nextQuestion() {
@@ -295,7 +362,6 @@
       },
 
       showComplete() {
-        const g = this.state.gender || 'boy';
         const activityArea = document.querySelector('#activity-area .activity-content');
         activityArea.innerHTML = `
           <div style="text-align: center; padding: 50px 20px;">

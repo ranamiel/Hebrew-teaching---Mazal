@@ -14,6 +14,13 @@
       <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
     </div>
 
+    <!-- בחירת רמת קושי -->
+    <div class="difficulty-selector" id="difficulty-selector">
+      <button class="difficulty-btn easy active" data-diff="easy" onclick="SyllablesActivity.setDifficulty('easy')">קל</button>
+      <button class="difficulty-btn medium" data-diff="medium" onclick="SyllablesActivity.setDifficulty('medium')">בינוני</button>
+      <button class="difficulty-btn hard" data-diff="hard" onclick="SyllablesActivity.setDifficulty('hard')">קשה</button>
+    </div>
+
     <div class="progress-bar">
       <div class="fill" id="progress-fill" style="width: 0%"></div>
     </div>
@@ -23,7 +30,7 @@
         <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 20px;"></p>
         <div class="word" id="current-word"></div>
         <button class="btn btn-secondary" id="play-word-btn" style="margin-bottom: 20px;">
-          🔊 <span id="play-btn-text">שמע את המילה</span>
+          🔊 <span id="play-btn-text"></span>
         </button>
       </div>
 
@@ -43,52 +50,54 @@
   <script src="../../js/progress.js"></script>
   <script>
     const SyllablesActivity = {
+      allWords: {},
       words: [],
       currentIndex: 0,
+      currentDifficulty: 'easy',
       state: {},
 
       async init() {
-        // Load state
         const saved = localStorage.getItem('hebrewReadingState');
         if (saved) this.state = JSON.parse(saved);
 
-        // Load words data
         try {
           const res = await fetch('../../data/words.json');
           const data = await res.json();
-          this.words = data.syllables;
+          this.allWords = data.syllables;
         } catch (e) {
           console.error('Could not load words:', e);
           return;
         }
 
-        // Load progress
         Progress.load(this.state.familyName || 'default');
-        Progress.setTotal(this.state.familyName || 'default', 'syllables', this.words.length);
 
         this.updateGenderText();
-        this.showWord();
+        this.setDifficulty('easy');
         this.bindEvents();
       },
 
       updateGenderText() {
         const g = this.state.gender || 'boy';
         const texts = {
-          boy: {
-            instruction: 'הקשב למילה ולחץ על ההברות בסדר הנכון',
-            playBtn: 'שמע את המילה',
-            nextBtn: 'המילה הבאה',
-          },
-          girl: {
-            instruction: 'הקשיבי למילה ולחצי על ההברות בסדר הנכון',
-            playBtn: 'שמעי את המילה',
-            nextBtn: 'המילה הבאה',
-          }
+          boy: { instruction: 'הקשב למילה ולחץ על ההברות בסדר הנכון', playBtn: 'שמע את המילה' },
+          girl: { instruction: 'הקשיבי למילה ולחצי על ההברות בסדר הנכון', playBtn: 'שמעי את המילה' }
         };
-        const t = texts[g];
-        document.getElementById('instruction-text').textContent = t.instruction;
-        document.getElementById('play-btn-text').textContent = t.playBtn;
-        document.getElementById('next-btn-text').textContent = t.nextBtn;
+        document.getElementById('instruction-text').textContent = texts[g].instruction;
+        document.getElementById('play-btn-text').textContent = texts[g].playBtn;
+      },
+
+      setDifficulty(diff) {
+        this.currentDifficulty = diff;
+        this.words = this.allWords[diff] || [];
+        this.currentIndex = 0;
+
+        document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.querySelector(`.difficulty-btn[data-diff="${diff}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
+
+        Progress.setTotal(this.state.familyName || 'default', `syllables-${diff}`, this.words.length);
+
+        this.showWord();
       },
 
       showWord() {
@@ -102,18 +111,14 @@
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('feedback-area').innerHTML = '';
 
-        // Create shuffled syllable blocks
         const container = document.getElementById('syllable-container');
         container.innerHTML = '';
 
-        // Create syllable buttons (shuffled)
-        const shuffled = [...word.syllables].sort(() => Math.random() - 0.5);
-        shuffled.forEach((syl, i) => {
+        const shuffled = this.shuffleArray([...word.syllables]);
+        shuffled.forEach((syl) => {
           const block = document.createElement('button');
           block.className = 'syllable-block';
           block.textContent = syl;
-          block.dataset.syllable = syl;
-          block.dataset.index = i;
           block.addEventListener('click', () => this.handleSyllableClick(block, syl));
           container.appendChild(block);
         });
@@ -132,11 +137,8 @@
 
         const word = this.words[this.currentIndex];
 
-        // Check if all syllables selected
         if (this.selectedOrder.length === word.syllables.length) {
-          // Check order
           const correct = this.selectedOrder.every((s, i) => s === word.syllables[i]);
-
           if (correct) {
             this.onCorrect();
           } else {
@@ -148,19 +150,17 @@
       onCorrect() {
         const g = this.state.gender || 'boy';
         const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
-        const feedbackArea = document.getElementById('feedback-area');
-        feedbackArea.innerHTML = `<div class="feedback success">${msg}</div>`;
+        document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
 
         document.querySelectorAll('.syllable-block').forEach(b => {
           b.classList.remove('highlighted');
           b.classList.add('correct');
         });
 
-        // Mark progress
         Progress.completeItem(
           this.state.familyName || 'default',
           'syllables',
-          this.currentIndex.toString()
+          `${this.currentDifficulty}-${this.currentIndex}`
         );
 
         document.getElementById('next-btn').style.display = 'inline-flex';
@@ -173,13 +173,11 @@
         const feedbackArea = document.getElementById('feedback-area');
         feedbackArea.innerHTML = `<div class="feedback error">${msg}</div>`;
 
-        // Show correct order briefly
         const hint = `הסדר הנכון: ${word.syllables.join(' - ')}`;
         setTimeout(() => {
           feedbackArea.innerHTML += `<div class="feedback info">${hint}</div>`;
         }, 800);
 
-        // Reset after a moment
         setTimeout(() => {
           this.selectedOrder = [];
           document.querySelectorAll('.syllable-block').forEach(b => {
@@ -191,15 +189,14 @@
 
       showComplete() {
         const g = this.state.gender || 'boy';
-        const msg = g === 'girl'
-          ? 'סיימת את כל המילים! כל הכבוד! 🌟'
-          : 'סיימת את כל המילים! כל הכבוד! 🌟';
-
         document.getElementById('activity-area').innerHTML = `
           <div style="text-align: center; padding: 50px 20px;">
             <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
-            <h2 style="color: var(--warm-red); margin-bottom: 15px;">${msg}</h2>
-            <button class="btn btn-primary" onclick="window.location.href='../../index.html'">
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את כל המילים ברמה הזו! כל הכבוד! 🌟</h2>
+            <button class="btn btn-primary" onclick="window.location.reload()">
+              רוצה לנסות רמה אחרת
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'" style="margin-top: 10px;">
               חזרה לתפריט
             </button>
           </div>
@@ -219,12 +216,19 @@
 
         document.getElementById('play-word-btn').addEventListener('click', () => {
           const word = this.words[this.currentIndex];
-          Speech.playAudio(word.audio).then(() => {
-            // If audio file doesn't exist, fallback to TTS
-          }).catch(() => {
+          Speech.playAudio(word.audio).catch(() => {
             Speech.speak(word.plain);
           });
         });
+      },
+
+      shuffleArray(arr) {
+        const shuffled = [...arr];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
       }
     };
 

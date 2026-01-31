@@ -648,6 +648,70 @@ body::before {
   justify-content: center;
 }
 
+/* === Locked Topic Cards === */
+.topic-card.topic-locked {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.topic-card.topic-locked .lock-overlay {
+  background: var(--bg-light-peach);
+  border: 2px dashed var(--warm-peach);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  color: var(--text-medium);
+  text-align: center;
+}
+
+.topic-card:not(.topic-locked) .lock-overlay {
+  display: none;
+}
+
+.subtopic-btn.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Difficulty Selector === */
+.difficulty-selector {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.difficulty-btn {
+  padding: 10px 24px;
+  font-size: 1.1rem;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 600;
+  border: 3px solid var(--warm-peach);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.difficulty-btn:hover {
+  border-color: var(--warm-orange);
+  background: var(--bg-light-peach);
+}
+
+.difficulty-btn.active {
+  background: var(--warm-orange);
+  color: var(--white);
+  border-color: var(--warm-red);
+}
+
+.difficulty-btn.easy { border-left: 4px solid #4CAF50; }
+.difficulty-btn.medium { border-left: 4px solid var(--warm-gold); }
+.difficulty-btn.hard { border-left: 4px solid var(--warm-coral); }
+
 /* === Responsive === */
 @media (max-width: 600px) {
   .welcome-title {
