@@ -1,43 +1,43 @@
 {
   "syllables": {
     "easy": [
-      { "word": "אִמָּא", "plain": "אמא", "syllables": ["אִ", "מָּא"], "syllableCount": 2, "emoji": "👩", "audio": "audio/words/ima.mp3" },
-      { "word": "חָבֵר", "plain": "חבר", "syllables": ["חָ", "בֵר"], "syllableCount": 2, "emoji": "👦", "audio": "audio/words/haver.mp3" },
-      { "word": "כַּדּוּר", "plain": "כדור", "syllables": ["כַּ", "דּוּר"], "syllableCount": 2, "emoji": "⚽", "audio": "audio/words/kadur.mp3" },
-      { "word": "בַּלּוֹן", "plain": "בלון", "syllables": ["בַּ", "לּוֹן"], "syllableCount": 2, "emoji": "🎈", "audio": "audio/words/balon.mp3" },
-      { "word": "יַלְדָה", "plain": "ילדה", "syllables": ["יַלְ", "דָה"], "syllableCount": 2, "emoji": "👧", "audio": "audio/words/yalda.mp3" }
+      { "word": "אִמָּא", "plain": "אמא", "syllables": ["אִ", "מָּא"], "syllableCount": 2, "emoji": "👩", "image": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&h=300&fit=crop", "audio": "audio/words/ima.mp3" },
+      { "word": "חָבֵר", "plain": "חבר", "syllables": ["חָ", "בֵר"], "syllableCount": 2, "emoji": "👦", "image": "https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=300&h=300&fit=crop", "audio": "audio/words/haver.mp3" },
+      { "word": "כַּדּוּר", "plain": "כדור", "syllables": ["כַּ", "דּוּר"], "syllableCount": 2, "emoji": "⚽", "image": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=300&h=300&fit=crop", "audio": "audio/words/kadur.mp3" },
+      { "word": "בַּלּוֹן", "plain": "בלון", "syllables": ["בַּ", "לּוֹן"], "syllableCount": 2, "emoji": "🎈", "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=300&fit=crop", "audio": "audio/words/balon.mp3" },
+      { "word": "יַלְדָה", "plain": "ילדה", "syllables": ["יַלְ", "דָה"], "syllableCount": 2, "emoji": "👧", "image": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=300&h=300&fit=crop", "audio": "audio/words/yalda.mp3" }
     ],
     "medium": [
-      { "word": "גְּלִידָה", "plain": "גלידה", "syllables": ["גְּלִי", "דָה"], "syllableCount": 2, "emoji": "🍦", "audio": "audio/words/glida.mp3" },
-      { "word": "חֲבִיתָה", "plain": "חביתה", "syllables": ["חֲבִי", "תָה"], "syllableCount": 2, "emoji": "🍳", "audio": "audio/words/havita.mp3" },
-      { "word": "תְּמוּנָה", "plain": "תמונה", "syllables": ["תְּמוּ", "נָה"], "syllableCount": 2, "emoji": "🖼️", "audio": "audio/words/tmuna.mp3" },
-      { "word": "תַּפּוּחַ", "plain": "תפוח", "syllables": ["תַּ", "פּוּחַ"], "syllableCount": 2, "emoji": "🍎", "audio": "audio/words/tapuach.mp3" },
-      { "word": "סַבְתָּא", "plain": "סבתא", "syllables": ["סַבְ", "תָּא"], "syllableCount": 2, "emoji": "👵", "audio": "audio/words/savta.mp3" }
+      { "word": "גְּלִידָה", "plain": "גלידה", "syllables": ["גְּלִי", "דָה"], "syllableCount": 2, "emoji": "🍦", "image": "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=300&h=300&fit=crop", "audio": "audio/words/glida.mp3" },
+      { "word": "חֲבִיתָה", "plain": "חביתה", "syllables": ["חֲבִי", "תָה"], "syllableCount": 2, "emoji": "🍳", "image": "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=300&h=300&fit=crop", "audio": "audio/words/havita.mp3" },
+      { "word": "תְּמוּנָה", "plain": "תמונה", "syllables": ["תְּמוּ", "נָה"], "syllableCount": 2, "emoji": "🖼️", "image": "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=300&h=300&fit=crop", "audio": "audio/words/tmuna.mp3" },
+      { "word": "תַּפּוּחַ", "plain": "תפוח", "syllables": ["תַּ", "פּוּחַ"], "syllableCount": 2, "emoji": "🍎", "image": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=300&fit=crop", "audio": "audio/words/tapuach.mp3" },
+      { "word": "סַבְתָּא", "plain": "סבתא", "syllables": ["סַבְ", "תָּא"], "syllableCount": 2, "emoji": "👵", "image": "https://images.unsplash.com/photo-1566616213894-2d4e1baee5d8?w=300&h=300&fit=crop", "audio": "audio/words/savta.mp3" }
     ],
     "hard": [
-      { "word": "מְכוֹנִית", "plain": "מכונית", "syllables": ["מְכוֹ", "נִית"], "syllableCount": 2, "emoji": "🚗", "audio": "audio/words/mekhonit.mp3" },
-      { "word": "שׁוֹקוֹלָד", "plain": "שוקולד", "syllables": ["שׁוֹ", "קוֹ", "לָד"], "syllableCount": 3, "emoji": "🍫", "audio": "audio/words/shokolad.mp3" },
-      { "word": "פַּרְפַּר", "plain": "פרפר", "syllables": ["פַּרְ", "פַּר"], "syllableCount": 2, "emoji": "🦋", "audio": "audio/words/parpar.mp3" },
-      { "word": "אֲרוּחָה", "plain": "ארוחה", "syllables": ["אֲרוּ", "חָה"], "syllableCount": 2, "emoji": "🍽️", "audio": "audio/words/arucha.mp3" },
-      { "word": "מִטְרִיָּה", "plain": "מטריה", "syllables": ["מִטְ", "רִ", "יָּה"], "syllableCount": 3, "emoji": "☂️", "audio": "audio/words/mitriya.mp3" }
+      { "word": "מְכוֹנִית", "plain": "מכונית", "syllables": ["מְכוֹ", "נִית"], "syllableCount": 2, "emoji": "🚗", "image": "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=300&h=300&fit=crop", "audio": "audio/words/mekhonit.mp3" },
+      { "word": "שׁוֹקוֹלָד", "plain": "שוקולד", "syllables": ["שׁוֹ", "קוֹ", "לָד"], "syllableCount": 3, "emoji": "🍫", "image": "https://images.unsplash.com/photo-1481391319762-47dff72954d9?w=300&h=300&fit=crop", "audio": "audio/words/shokolad.mp3" },
+      { "word": "פַּרְפַּר", "plain": "פרפר", "syllables": ["פַּרְ", "פַּר"], "syllableCount": 2, "emoji": "🦋", "image": "https://images.unsplash.com/photo-1559963110-71b394e7494d?w=300&h=300&fit=crop", "audio": "audio/words/parpar.mp3" },
+      { "word": "אֲרוּחָה", "plain": "ארוחה", "syllables": ["אֲרוּ", "חָה"], "syllableCount": 2, "emoji": "🍽️", "image": "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=300&h=300&fit=crop", "audio": "audio/words/arucha.mp3" },
+      { "word": "מִטְרִיָּה", "plain": "מטריה", "syllables": ["מִטְ", "רִ", "יָּה"], "syllableCount": 3, "emoji": "☂️", "image": "https://images.unsplash.com/photo-1534309466160-70b22cc6252c?w=300&h=300&fit=crop", "audio": "audio/words/mitriya.mp3" }
     ]
   },
   "combinations": {
     "easy": [
-      { "word": "מַחְשֵׁב", "plain": "מחשב", "parts": ["מַחְ", "שֵׁב"], "audio": "audio/words/machshev.mp3" },
-      { "word": "תִּרְגּוּם", "plain": "תרגום", "parts": ["תִּרְ", "גּוּם"], "audio": "audio/words/tirgum.mp3" },
-      { "word": "כַּדּוּרֶגֶל", "plain": "כדורגל", "parts": ["כַּ", "דּוּ", "רֶ", "גֶל"], "audio": "audio/words/kaduregel.mp3" }
+      { "word": "מַחְשֵׁב", "plain": "מחשב", "parts": ["מַ", "חְ", "שֵׁב"], "partsCount": 3, "emoji": "💻", "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&h=300&fit=crop", "audio": "audio/words/machshev.mp3" },
+      { "word": "תִּרְגּוּם", "plain": "תרגום", "parts": ["תִּרְ", "גּוּם"], "partsCount": 2, "emoji": "📚", "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=300&h=300&fit=crop", "audio": "audio/words/tirgum.mp3" },
+      { "word": "כַּדּוּרֶגֶל", "plain": "כדורגל", "parts": ["כַּ", "דּוּ", "רֶ", "גֶל"], "partsCount": 4, "emoji": "⚽", "image": "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=300&h=300&fit=crop", "audio": "audio/words/kaduregel.mp3" }
     ],
     "medium": [
-      { "word": "פִּטְרִיָּה", "plain": "פטריה", "parts": ["פִּט", "ר", "יָּה"], "audio": "audio/words/pitriya.mp3" },
-      { "word": "מִשְׁפָּחָה", "plain": "משפחה", "parts": ["מִשְׁ", "פָּ", "חָה"], "audio": "audio/words/mishpacha.mp3" },
-      { "word": "אַרְנָבוֹן", "plain": "ארנבון", "parts": ["אַרְ", "נָ", "בוֹן"], "audio": "audio/words/arnavon.mp3" },
-      { "word": "שַׁלְהֶבֶת", "plain": "שלהבת", "parts": ["שַׁלְ", "הֶ", "בֶת"], "audio": "audio/words/shalhevet.mp3" }
+      { "word": "פִּטְרִיָּה", "plain": "פטריה", "parts": ["פִּטְ", "רִ", "יָּה"], "partsCount": 3, "emoji": "🍄", "image": "https://images.unsplash.com/photo-1504545102780-26774c1bb073?w=300&h=300&fit=crop", "audio": "audio/words/pitriya.mp3" },
+      { "word": "מִשְׁפָּחָה", "plain": "משפחה", "parts": ["מִשְׁ", "פָּ", "חָה"], "partsCount": 3, "emoji": "👨‍👩‍👧", "image": "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=300&h=300&fit=crop", "audio": "audio/words/mishpacha.mp3" },
+      { "word": "אַרְנָבוֹן", "plain": "ארנבון", "parts": ["אַרְ", "נָ", "בוֹן"], "partsCount": 3, "emoji": "🐰", "image": "https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=300&h=300&fit=crop", "audio": "audio/words/arnavon.mp3" },
+      { "word": "שַׁלְהֶבֶת", "plain": "שלהבת", "parts": ["שַׁלְ", "הֶ", "בֶת"], "partsCount": 3, "emoji": "🔥", "image": "https://images.unsplash.com/photo-1475137979732-b349acb6b7e3?w=300&h=300&fit=crop", "audio": "audio/words/shalhevet.mp3" }
     ],
     "hard": [
-      { "word": "מִסְפָּרַיִם", "plain": "מספריים", "parts": ["מִסְ", "פָּ", "רַ", "יִם"], "audio": "audio/words/misparayim.mp3" },
-      { "word": "מִשְׁקָפַיִם", "plain": "משקפיים", "parts": ["מִשְׁ", "קָ", "פַ", "יִם"], "audio": "audio/words/mishkafayim.mp3" },
-      { "word": "מַדְרֵגוֹת", "plain": "מדרגות", "parts": ["מַדְ", "רֵ", "גוֹת"], "audio": "audio/words/madregot.mp3" }
+      { "word": "מִסְפָּרַיִם", "plain": "מספריים", "parts": ["מִסְ", "פָּ", "רַ", "יִם"], "partsCount": 4, "emoji": "✂️", "image": "https://images.unsplash.com/photo-1585238341710-4d3ff484184d?w=300&h=300&fit=crop", "audio": "audio/words/misparayim.mp3" },
+      { "word": "מִשְׁקָפַיִם", "plain": "משקפיים", "parts": ["מִשְׁ", "קָ", "פַ", "יִם"], "partsCount": 4, "emoji": "👓", "image": "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=300&h=300&fit=crop", "audio": "audio/words/mishkafayim.mp3" },
+      { "word": "מַדְרֵגוֹת", "plain": "מדרגות", "parts": ["מַדְ", "רֵ", "גוֹת"], "partsCount": 3, "emoji": "🪜", "image": "https://images.unsplash.com/photo-1503236823255-94609f598e71?w=300&h=300&fit=crop", "audio": "audio/words/madregot.mp3" }
     ]
   },
   "difficultyNames": {

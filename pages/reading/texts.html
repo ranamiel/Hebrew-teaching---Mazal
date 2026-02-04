@@ -282,7 +282,7 @@
         document.getElementById('feedback-area').innerHTML = `<div class="feedback success">${msg}</div>`;
 
         Progress.completeItem(
-          this.state.familyName || 'default',
+          this.state.childName || 'default',
           'reading',
           this.currentText.id.toString()
         );

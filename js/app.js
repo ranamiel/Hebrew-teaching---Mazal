@@ -1,10 +1,7 @@
 /* === Hebrew Reading Site - Main Application === */
 
 const App = {
-  allowedFamilies: ['עמיאל'],
-
   state: {
-    familyName: '',
     childName: '',
     gender: null, // 'boy' or 'girl'
     currentPage: 'welcome',
@@ -50,6 +47,8 @@ const App = {
       letsPlay: 'בוא נתרגל!',
       chooseText: 'בחר טקסט לקריאה',
       notExactly: 'לא בדיוק... נסה שוב!',
+      findLetter: 'חפש את האות',
+      howManyFound: 'כמה פעמים מצאת?',
     },
     girl: {
       welcome: 'ברוכה הבאה',
@@ -89,6 +88,8 @@ const App = {
       letsPlay: 'בואי נתרגל!',
       chooseText: 'בחרי טקסט לקריאה',
       notExactly: 'לא בדיוק... נסי שוב!',
+      findLetter: 'חפשי את האות',
+      howManyFound: 'כמה פעמים מצאת?',
     }
   },
 
@@ -102,8 +103,6 @@ const App = {
     this.bindEvents();
 
     // תמיד מתחילים מדף הכניסה - המשתמש עובר את כל השלבים בכל ביקור
-    // איפוס נתוני הכניסה (התקדמות נשמרת בנפרד ב-progress)
-    this.state.familyName = '';
     this.state.childName = '';
     this.state.gender = null;
     this.state.currentPage = 'welcome';
@@ -128,29 +127,17 @@ const App = {
   },
 
   bindEvents() {
-    // שלב 1: הכנסת שם משפחה
-    const familyForm = document.getElementById('family-form');
-    if (familyForm) {
-      familyForm.addEventListener('submit', (e) => {
+    // שלב 1: הכנסת שם פרטי
+    const nameForm = document.getElementById('name-form');
+    if (nameForm) {
+      nameForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const input = document.getElementById('family-name-input');
+        const input = document.getElementById('name-input');
         const name = input.value.trim();
-        const errorEl = document.getElementById('family-name-error');
 
         if (!name) return;
 
-        if (!this.allowedFamilies.includes(name)) {
-          if (errorEl) {
-            errorEl.textContent = 'שם המשפחה לא נמצא. נסו שוב!';
-            errorEl.style.display = 'block';
-          }
-          input.value = '';
-          input.focus();
-          return;
-        }
-
-        if (errorEl) errorEl.style.display = 'none';
-        this.state.familyName = name;
+        this.state.childName = name;
         this.saveState();
         this.showPage('gender-select');
       });
@@ -165,25 +152,10 @@ const App = {
         btn.classList.add('selected');
         this.saveState();
         setTimeout(() => {
-          this.showPage('child-name');
+          this.showPage('dashboard');
         }, 400);
       });
     });
-
-    // שלב 3: הכנסת שם הילד/ה
-    const childForm = document.getElementById('child-name-form');
-    if (childForm) {
-      childForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const input = document.getElementById('child-name-input');
-        const name = input.value.trim();
-        if (name) {
-          this.state.childName = name;
-          this.saveState();
-          this.showPage('dashboard');
-        }
-      });
-    }
 
     // ניווט כללי
     document.querySelectorAll('[data-navigate]').forEach(btn => {
@@ -218,29 +190,11 @@ const App = {
 
   updatePageContent(pageId) {
     if (pageId === 'gender-select') {
-      const nameEl = document.getElementById('gender-family-name');
-      if (nameEl) nameEl.textContent = this.state.familyName;
-    }
-
-    if (pageId === 'child-name') {
-      const titleEl = document.getElementById('child-name-title');
-      if (titleEl) {
-        const genderWord = this.state.gender === 'girl' ? 'הבת' : 'הבן';
-        titleEl.textContent = `מה השם של ${genderWord}?`;
-      }
-      const input = document.getElementById('child-name-input');
-      if (input && this.state.childName) {
-        input.value = this.state.childName;
-      }
+      const nameEl = document.getElementById('gender-child-name');
+      if (nameEl) nameEl.textContent = this.state.childName;
     }
 
     if (pageId === 'dashboard') {
-      const nameEl = document.getElementById('dashboard-family-name');
-      if (nameEl) nameEl.textContent = this.state.familyName;
-
-      const childEl = document.getElementById('dashboard-child-name');
-      if (childEl) childEl.textContent = this.state.childName;
-
       const genderGreeting = document.getElementById('dashboard-greeting');
       if (genderGreeting) {
         genderGreeting.textContent = this.text('welcome') + ', ' + this.state.childName + '!';
@@ -297,11 +251,11 @@ const App = {
   updateDashboardLocks() {
     // ניקוד נפתח רק אחרי שיש התקדמות במודעות פונולוגית
     // קריאה נפתחת רק אחרי שיש התקדמות בניקוד
-    const progress = JSON.parse(localStorage.getItem('progress_' + this.state.familyName) || '{}');
+    const progress = JSON.parse(localStorage.getItem('progress_' + this.state.childName) || '{}');
 
     const hasPhonologicalProgress = (
       (progress['syllables'] && progress['syllables'].completed > 0) ||
-      (progress['letters-identify'] && progress['letters-identify'].completed > 0)
+      (progress['letters'] && progress['letters'].completed > 0)
     );
 
     const hasNikudProgress = (
@@ -348,14 +302,13 @@ const App = {
     }
   },
 
-  resetFamily() {
-    this.state.familyName = '';
+  resetAndStart() {
     this.state.childName = '';
     this.state.gender = null;
     this.state.currentPage = 'welcome';
     this.saveState();
     this.showPage('welcome');
-    const input = document.getElementById('family-name-input');
+    const input = document.getElementById('name-input');
     if (input) input.value = '';
   },
 

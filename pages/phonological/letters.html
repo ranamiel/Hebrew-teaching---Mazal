@@ -3,86 +3,194 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>אותיות - זיהוי, שיום וצליל</title>
+  <title>חיפוש אותיות</title>
   <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .letters-board {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .board-letter {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 700;
+      background: var(--bg-light-peach);
+      border: 3px solid var(--warm-peach);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .board-letter:hover {
+      transform: scale(1.05);
+      border-color: var(--warm-orange);
+    }
+
+    .board-letter.selected {
+      background: var(--warm-orange);
+      color: var(--white);
+      border-color: var(--warm-red);
+      transform: scale(1.1);
+    }
+
+    .board-letter.correct {
+      background: #4CAF50;
+      color: var(--white);
+      border-color: #388E3C;
+    }
+
+    .board-letter.missed {
+      background: var(--warm-yellow);
+      border-color: var(--warm-gold);
+      animation: pulse-missed 0.5s ease 3;
+    }
+
+    @keyframes pulse-missed {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .target-letter-display {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .target-letter-display .target {
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--warm-red);
+      background: var(--white);
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      border: 4px solid var(--warm-orange);
+      margin: 10px 0;
+    }
+
+    .count-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .count-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-family: 'Rubik', sans-serif;
+      border: 3px solid var(--warm-peach);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .count-btn:hover {
+      background: var(--bg-light-peach);
+      border-color: var(--warm-orange);
+      transform: scale(1.1);
+    }
+
+    .count-btn.selected {
+      background: var(--warm-orange);
+      color: var(--white);
+      border-color: var(--warm-red);
+    }
+
+    .selected-count {
+      text-align: center;
+      font-size: 1.3rem;
+      color: var(--text-medium);
+      margin: 10px 0;
+      min-height: 30px;
+    }
+
+    @media (max-width: 600px) {
+      .letters-board {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        padding: 15px;
+      }
+      .board-letter { font-size: 1.5rem; }
+      .target-letter-display .target { font-size: 4rem; width: 100px; height: 100px; }
+      .count-btn { width: 50px; height: 50px; font-size: 1.3rem; }
+    }
+  </style>
 </head>
 <body>
 
   <div class="container activity-page">
     <div class="activity-header">
-      <h1 id="page-title">אותיות</h1>
+      <h1>חיפוש אותיות</h1>
       <button class="btn btn-back" onclick="window.location.href='../../index.html'">← חזרה לתפריט</button>
     </div>
 
-    <!-- בחירת מצב -->
-    <div id="mode-select" class="activity-content" style="text-align: center;">
-      <h2 style="color: var(--warm-red); margin-bottom: 25px;">מה רוצים לתרגל?</h2>
-      <div style="display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 0 auto;">
-        <button class="subtopic-btn" onclick="LettersActivity.startMode('identify')">
-          <span class="subtopic-icon">👁️</span>
-          <span>זיהוי אותיות</span>
-        </button>
-        <button class="subtopic-btn" onclick="LettersActivity.startMode('name')">
-          <span class="subtopic-icon">🗣️</span>
-          <span>שיום אותיות (נתינת שם)</span>
-        </button>
-        <button class="subtopic-btn" onclick="LettersActivity.startMode('sound')">
-          <span class="subtopic-icon">🔊</span>
-          <span>צליל אותיות</span>
-        </button>
-      </div>
+    <div class="progress-bar">
+      <div class="fill" id="progress-fill" style="width: 0%"></div>
     </div>
 
-    <!-- אזור פעילות -->
-    <div id="activity-area" style="display: none;">
-      <!-- הצגת קבוצת אותיות נוכחית -->
-      <div id="group-info" style="text-align: center; margin-bottom: 10px;">
-        <span id="group-label" style="font-size: 0.95rem; color: var(--text-light); background: var(--bg-light-peach); padding: 4px 14px; border-radius: 8px;"></span>
-      </div>
+    <div class="activity-content" id="activity-area">
+      <!-- שלב 1: חיפוש האות בלוח -->
+      <div id="search-phase">
+        <p id="instruction-text" style="text-align: center; font-size: 1.3rem; color: var(--text-dark); margin-bottom: 10px;"></p>
 
-      <div class="progress-bar">
-        <div class="fill" id="progress-fill" style="width: 0%"></div>
-      </div>
-
-      <div class="activity-content">
-        <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); text-align: center; margin-bottom: 20px;"></p>
-
-        <!-- מצב זיהוי -->
-        <div id="identify-area" style="display: none;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <button class="btn btn-secondary" id="play-letter-btn">
-              🔊 <span id="play-letter-text"></span>
-            </button>
-          </div>
-          <div class="letter-grid" id="letter-grid"></div>
+        <div class="target-letter-display">
+          <div class="target" id="target-letter"></div>
         </div>
 
-        <!-- מצב שיום -->
-        <div id="name-area" style="display: none;">
-          <div class="word-display">
-            <div class="word" id="shown-letter" style="font-size: 6rem;"></div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="name-options"></div>
-        </div>
+        <button class="btn btn-secondary" id="hear-letter-btn" style="display: block; margin: 0 auto 20px;">
+          🔊 <span id="hear-btn-text">שמע את שם האות</span>
+        </button>
 
-        <!-- מצב צליל -->
-        <div id="sound-area" style="display: none;">
-          <div class="word-display">
-            <div class="word" id="sound-letter" style="font-size: 6rem;"></div>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0;" id="sound-options"></div>
-        </div>
+        <div class="letters-board" id="letters-board"></div>
 
-        <div id="feedback-area"></div>
-
-        <div class="nav-controls">
-          <button class="btn btn-primary" id="next-btn" style="display: none;" onclick="LettersActivity.nextQuestion()">
-            הבא →
-          </button>
-          <button class="btn btn-back" id="back-to-modes" style="display: none;" onclick="LettersActivity.showModeSelect()">
-            ← חזרה לבחירת תרגול
+        <div style="text-align: center; margin-top: 20px;">
+          <button class="btn btn-primary" id="done-search-btn">
+            <span id="done-btn-text">סיימתי לחפש!</span>
           </button>
         </div>
+      </div>
+
+      <!-- שלב 2: ספירת האותיות -->
+      <div id="count-phase" style="display: none;">
+        <p id="count-question" style="text-align: center; font-size: 1.3rem; color: var(--text-dark); margin-bottom: 20px;"></p>
+
+        <div class="count-buttons" id="count-buttons"></div>
+
+        <div class="selected-count" id="selected-count"></div>
+
+        <div style="text-align: center;">
+          <button class="btn btn-primary" id="check-count-btn" style="display: none;">
+            <span id="check-btn-text">בדוק!</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="feedback-area" style="margin-top: 20px;"></div>
+
+      <div class="nav-controls">
+        <button class="btn btn-primary" id="next-btn" style="display: none;">
+          האות הבאה →
+        </button>
       </div>
     </div>
   </div>
@@ -92,296 +200,318 @@
   <script>
     const LettersActivity = {
       allLetters: [],
-      orderedLetters: [],
+      targetLetters: [],
       currentIndex: 0,
-      mode: null,
-      questions: [],
+      board: [],
+      targetLetter: null,
+      targetCount: 0,
+      selectedCells: new Set(),
+      selectedCountValue: 0,
       state: {},
-      groupNames: {},
+
+      hebrewLetters: [
+        { letter: 'א', name: 'אָלֶף' },
+        { letter: 'ב', name: 'בֵּית' },
+        { letter: 'ג', name: 'גִּימֶל' },
+        { letter: 'ד', name: 'דָּלֶת' },
+        { letter: 'ה', name: 'הֵא' },
+        { letter: 'ו', name: 'וָו' },
+        { letter: 'ז', name: 'זַיִן' },
+        { letter: 'ח', name: 'חֵית' },
+        { letter: 'ט', name: 'טֵית' },
+        { letter: 'י', name: 'יוֹד' },
+        { letter: 'כ', name: 'כַּף' },
+        { letter: 'ל', name: 'לָמֶד' },
+        { letter: 'מ', name: 'מֵם' },
+        { letter: 'נ', name: 'נוּן' },
+        { letter: 'ס', name: 'סָמֶךְ' },
+        { letter: 'ע', name: 'עַיִן' },
+        { letter: 'פ', name: 'פֵּא' },
+        { letter: 'צ', name: 'צָדִי' },
+        { letter: 'ק', name: 'קוֹף' },
+        { letter: 'ר', name: 'רֵישׁ' },
+        { letter: 'ש', name: 'שִׁין' },
+        { letter: 'ת', name: 'תָּו' }
+      ],
 
       async init() {
         const saved = localStorage.getItem('hebrewReadingState');
         if (saved) this.state = JSON.parse(saved);
 
-        try {
-          const res = await fetch('../../data/letters.json');
-          const data = await res.json();
-          this.allLetters = data.letters;
-          this.groupNames = data.groupNames;
-        } catch (e) {
-          console.error('Could not load letters:', e);
-        }
+        Progress.load(this.state.childName || 'default');
 
-        // חישוב סדר פדגוגי לפי שם הילד/ה
-        this.orderedLetters = this.computeLetterOrder();
+        // בחירת אותיות לחיפוש - מתחילים מאותיות השם אם יש
+        this.selectTargetLetters();
+        this.updateGenderText();
+        this.showRound();
+        this.bindEvents();
       },
 
-      // חישוב סדר האותיות - אותיות השם קודם, אחר כך לפי קבוצה
-      computeLetterOrder() {
-        if (!this.state.childName) return [...this.allLetters];
+      selectTargetLetters() {
+        const childLetters = this.getChildNameLetters();
 
+        if (childLetters.length > 0) {
+          // מתחילים עם אותיות השם
+          this.targetLetters = childLetters.slice(0, 5);
+        } else {
+          // אם אין שם - בוחרים אותיות אקראיות
+          const shuffled = this.shuffleArray([...this.hebrewLetters]);
+          this.targetLetters = shuffled.slice(0, 5).map(l => l.letter);
+        }
+      },
+
+      getChildNameLetters() {
+        if (!this.state.childName) return [];
         const finalToRegular = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
         const seen = new Set();
-        const childLetters = [];
-
+        const letters = [];
         for (const char of this.state.childName) {
           const normalized = finalToRegular[char] || char;
           if (/[\u05D0-\u05EA]/.test(normalized) && !seen.has(normalized)) {
             seen.add(normalized);
-            childLetters.push(normalized);
+            letters.push(normalized);
           }
         }
-
-        const childLetterSet = new Set(childLetters);
-
-        // אותיות השם בסדר שהן מופיעות בשם
-        const nameLetters = [];
-        for (const cl of childLetters) {
-          const found = this.allLetters.find(l => l.letter === cl);
-          if (found) nameLetters.push({ ...found, group: 1 });
-        }
-
-        // שאר האותיות לפי קבוצה פדגוגית
-        const remaining = this.allLetters
-          .filter(l => !childLetterSet.has(l.letter))
-          .sort((a, b) => a.group - b.group);
-
-        return [...nameLetters, ...remaining];
+        return letters;
       },
 
-      startMode(mode) {
-        this.mode = mode;
-        this.currentIndex = 0;
-        this.questions = [...this.orderedLetters]; // לא מערבבים - סדר פדגוגי
-
-        document.getElementById('mode-select').style.display = 'none';
-        document.getElementById('activity-area').style.display = 'block';
-
-        document.getElementById('identify-area').style.display = 'none';
-        document.getElementById('name-area').style.display = 'none';
-        document.getElementById('sound-area').style.display = 'none';
-
+      updateGenderText() {
         const g = this.state.gender || 'boy';
-        const texts = this.getGenderTexts();
-
-        if (mode === 'identify') {
-          document.getElementById('page-title').textContent = 'זיהוי אותיות';
-          document.getElementById('identify-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent = texts.listenAndPress;
-          document.getElementById('play-letter-text').textContent = texts.hearLetterName;
-        } else if (mode === 'name') {
-          document.getElementById('page-title').textContent = 'שיום אותיות';
-          document.getElementById('name-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent = texts.whatLetterName;
-        } else if (mode === 'sound') {
-          document.getElementById('page-title').textContent = 'צליל אותיות';
-          document.getElementById('sound-area').style.display = 'block';
-          document.getElementById('instruction-text').textContent = texts.whatLetterSound;
-        }
-
-        this.showQuestion();
-      },
-
-      getGenderTexts() {
-        const g = this.state.gender || 'boy';
-        // טעינת טקסטים מרוכזת מ-app.js
-        const allTexts = {
+        const texts = {
           boy: {
-            listenAndPress: 'הקשב לשם האות ולחץ עליה',
-            hearLetterName: 'שמע את שם האות',
-            whatLetterName: 'מה השם של האות? בחר את התשובה הנכונה',
-            whatLetterSound: 'מה הצליל של האות? בחר את התשובה הנכונה',
-            excellent: 'מצוין! 🎉',
-            tryAgain: 'נסה שוב!',
+            instruction: 'חפש את האות',
+            hearBtn: 'שמע את שם האות',
+            doneBtn: 'סיימתי לחפש!',
+            countQuestion: 'כמה פעמים מצאת את האות?',
+            checkBtn: 'בדוק!'
           },
           girl: {
-            listenAndPress: 'הקשיבי לשם האות ולחצי עליה',
-            hearLetterName: 'שמעי את שם האות',
-            whatLetterName: 'מה השם של האות? בחרי את התשובה הנכונה',
-            whatLetterSound: 'מה הצליל של האות? בחרי את התשובה הנכונה',
-            excellent: 'מצוינת! 🎉',
-            tryAgain: 'נסי שוב!',
+            instruction: 'חפשי את האות',
+            hearBtn: 'שמעי את שם האות',
+            doneBtn: 'סיימתי לחפש!',
+            countQuestion: 'כמה פעמים מצאת את האות?',
+            checkBtn: 'בדקי!'
           }
         };
-        return allTexts[g];
+        const t = texts[g];
+        document.getElementById('hear-btn-text').textContent = t.hearBtn;
+        document.getElementById('done-btn-text').textContent = t.doneBtn;
+        document.getElementById('check-btn-text').textContent = t.checkBtn;
       },
 
-      showQuestion() {
-        if (this.currentIndex >= this.questions.length) {
+      showRound() {
+        if (this.currentIndex >= this.targetLetters.length) {
           this.showComplete();
           return;
         }
 
-        document.getElementById('next-btn').style.display = 'none';
-        document.getElementById('back-to-modes').style.display = 'none';
+        this.targetLetter = this.targetLetters[this.currentIndex];
+        this.selectedCells = new Set();
+
+        // יצירת הלוח
+        this.buildBoard();
+
+        // הצגת האות המבוקשת
+        const g = this.state.gender || 'boy';
+        const instruction = g === 'girl' ? 'חפשי את האות' : 'חפש את האות';
+        document.getElementById('instruction-text').textContent = instruction;
+        document.getElementById('target-letter').textContent = this.targetLetter;
+
+        // איפוס
+        document.getElementById('search-phase').style.display = 'block';
+        document.getElementById('count-phase').style.display = 'none';
         document.getElementById('feedback-area').innerHTML = '';
-
-        const letter = this.questions[this.currentIndex];
-
-        // הצגת שם הקבוצה
-        const groupLabel = document.getElementById('group-label');
-        const groupNum = letter.group;
-        const groupName = this.groupNames[groupNum] || '';
-        groupLabel.textContent = groupName;
-
-        if (this.mode === 'identify') {
-          this.showIdentifyQuestion(letter);
-        } else if (this.mode === 'name') {
-          this.showNameQuestion(letter);
-        } else if (this.mode === 'sound') {
-          this.showSoundQuestion(letter);
-        }
+        document.getElementById('next-btn').style.display = 'none';
+        document.getElementById('done-search-btn').style.display = 'inline-flex';
 
         this.updateProgress();
+
+        // השמעת שם האות
+        this.playLetterName();
       },
 
-      showIdentifyQuestion(target) {
-        const grid = document.getElementById('letter-grid');
-        grid.innerHTML = '';
+      buildBoard() {
+        const boardSize = 24; // 6x4 grid
+        this.board = [];
 
-        // 8 אותיות אקראיות כולל המטרה
-        let options = this.shuffleArray([...this.allLetters]).slice(0, 8);
-        if (!options.find(l => l.letter === target.letter)) {
-          options[0] = target;
-          options = this.shuffleArray(options);
+        // כמה פעמים האות המבוקשת תופיע (2-4 פעמים)
+        this.targetCount = Math.floor(Math.random() * 3) + 2;
+
+        // מילוי הלוח - קודם האותיות המבוקשות
+        for (let i = 0; i < this.targetCount; i++) {
+          this.board.push({ letter: this.targetLetter, isTarget: true });
         }
 
-        options.forEach(l => {
-          const cell = document.createElement('button');
-          cell.className = 'letter-cell';
-          cell.textContent = l.letter;
-          cell.addEventListener('click', () => {
-            if (l.letter === target.letter) {
-              cell.classList.add('correct');
-              this.onCorrect();
-            } else {
-              cell.classList.add('incorrect');
-              setTimeout(() => cell.classList.remove('incorrect'), 600);
-              this.onWrongAttempt();
-            }
-          });
-          grid.appendChild(cell);
-        });
+        // מילוי שאר הלוח באותיות אקראיות (לא האות המבוקשת)
+        const otherLetters = this.hebrewLetters.filter(l => l.letter !== this.targetLetter);
+        while (this.board.length < boardSize) {
+          const randomLetter = otherLetters[Math.floor(Math.random() * otherLetters.length)];
+          this.board.push({ letter: randomLetter.letter, isTarget: false });
+        }
 
-        document.getElementById('play-letter-btn').onclick = () => {
-          Speech.playAudio(target.audio).catch(() => {
-            Speech.speak(target.name);
-          });
-        };
-      },
+        // ערבוב הלוח
+        this.board = this.shuffleArray(this.board);
 
-      showNameQuestion(target) {
-        document.getElementById('shown-letter').textContent = target.letter;
-        const container = document.getElementById('name-options');
+        // הצגת הלוח
+        const container = document.getElementById('letters-board');
         container.innerHTML = '';
-
-        let options = this.shuffleArray(
-          this.allLetters.filter(l => l.letter !== target.letter)
-        ).slice(0, 3).map(l => l.name);
-        options.push(target.name);
-        options = this.shuffleArray(options);
-
-        options.forEach(name => {
-          const btn = document.createElement('button');
-          btn.className = 'syllable-block';
-          btn.textContent = name;
-          btn.style.fontSize = '1.3rem';
-          btn.addEventListener('click', () => {
-            if (name === target.name) {
-              btn.classList.add('correct');
-              this.onCorrect();
-            } else {
-              btn.classList.add('highlighted');
-              setTimeout(() => btn.classList.remove('highlighted'), 600);
-              this.onWrongAttempt();
-            }
-          });
-          container.appendChild(btn);
+        this.board.forEach((cell, index) => {
+          const div = document.createElement('div');
+          div.className = 'board-letter';
+          div.textContent = cell.letter;
+          div.dataset.index = index;
+          div.addEventListener('click', () => this.toggleCell(index, div));
+          container.appendChild(div);
         });
       },
 
-      showSoundQuestion(target) {
-        document.getElementById('sound-letter').textContent = target.letter;
-        const container = document.getElementById('sound-options');
+      toggleCell(index, element) {
+        if (this.selectedCells.has(index)) {
+          this.selectedCells.delete(index);
+          element.classList.remove('selected');
+        } else {
+          this.selectedCells.add(index);
+          element.classList.add('selected');
+        }
+      },
+
+      finishSearch() {
+        // מעבר לשלב הספירה
+        document.getElementById('search-phase').style.display = 'none';
+        document.getElementById('count-phase').style.display = 'block';
+
+        const g = this.state.gender || 'boy';
+        document.getElementById('count-question').textContent =
+          (g === 'girl' ? 'כמה פעמים מצאת את האות ' : 'כמה פעמים מצאת את האות ') + this.targetLetter + '?';
+
+        // יצירת כפתורי מספרים
+        const container = document.getElementById('count-buttons');
         container.innerHTML = '';
-
-        let options = this.shuffleArray(
-          this.allLetters.filter(l => l.letter !== target.letter)
-        ).slice(0, 3).map(l => l.sound);
-        options.push(target.sound);
-        options = this.shuffleArray(options);
-
-        options.forEach(sound => {
+        for (let i = 0; i <= 6; i++) {
           const btn = document.createElement('button');
-          btn.className = 'syllable-block';
-          btn.textContent = sound;
-          btn.style.fontSize = '1.3rem';
-          btn.addEventListener('click', () => {
-            if (sound === target.sound) {
-              btn.classList.add('correct');
-              this.onCorrect();
-            } else {
-              btn.classList.add('highlighted');
-              setTimeout(() => btn.classList.remove('highlighted'), 600);
-              this.onWrongAttempt();
-            }
-          });
+          btn.className = 'count-btn';
+          btn.textContent = i;
+          btn.addEventListener('click', () => this.selectCount(i, btn));
           container.appendChild(btn);
+        }
+
+        document.getElementById('selected-count').textContent = '';
+        document.getElementById('check-count-btn').style.display = 'none';
+      },
+
+      selectCount(num, btn) {
+        document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+
+        document.getElementById('selected-count').textContent = num === 0 ? 'אפס פעמים' : (num === 1 ? 'פעם אחת' : `${num} פעמים`);
+        document.getElementById('check-count-btn').style.display = 'inline-flex';
+
+        this.selectedCountValue = num;
+      },
+
+      checkCount() {
+        const g = this.state.gender || 'boy';
+
+        // בדיקה - האם הספירה נכונה?
+        if (this.selectedCountValue === this.targetCount) {
+          // נכון!
+          this.markCorrectLetters();
+
+          const msg = g === 'girl' ? 'מצוינת! 🎉' : 'מצוין! 🎉';
+          document.getElementById('feedback-area').innerHTML = `
+            <div class="feedback success">${msg}</div>
+            <p style="text-align: center; margin-top: 10px;">האות ${this.targetLetter} הופיעה ${this.targetCount} פעמים</p>
+          `;
+
+          Progress.completeItem(
+            this.state.childName || 'default',
+            'letters',
+            `find-${this.currentIndex}`
+          );
+
+          document.getElementById('check-count-btn').style.display = 'none';
+          document.getElementById('next-btn').style.display = 'inline-flex';
+        } else {
+          // לא נכון
+          const msg = g === 'girl' ? 'לא בדיוק... נסי שוב!' : 'לא בדיוק... נסה שוב!';
+          document.getElementById('feedback-area').innerHTML = `<div class="feedback error">${msg}</div>`;
+
+          // איפוס הבחירה
+          setTimeout(() => {
+            document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+            document.getElementById('selected-count').textContent = '';
+            document.getElementById('check-count-btn').style.display = 'none';
+            document.getElementById('feedback-area').innerHTML = '';
+          }, 2000);
+        }
+      },
+
+      markCorrectLetters() {
+        // הצגת הלוח שוב עם סימון נכון
+        document.getElementById('search-phase').style.display = 'block';
+        document.getElementById('count-phase').style.display = 'none';
+
+        const cells = document.querySelectorAll('.board-letter');
+        cells.forEach((cell, index) => {
+          cell.style.pointerEvents = 'none';
+          cell.classList.remove('selected');
+          if (this.board[index].isTarget) {
+            cell.classList.add('correct');
+            if (!this.selectedCells.has(index)) {
+              cell.classList.add('missed');
+            }
+          }
         });
+
+        document.getElementById('done-search-btn').style.display = 'none';
       },
 
-      onCorrect() {
-        const texts = this.getGenderTexts();
-        document.getElementById('feedback-area').innerHTML =
-          `<div class="feedback success">${texts.excellent}</div>`;
-
-        Progress.completeItem(
-          this.state.familyName || 'default',
-          `letters-${this.mode}`,
-          this.currentIndex.toString()
-        );
-
-        document.getElementById('next-btn').style.display = 'inline-flex';
-      },
-
-      onWrongAttempt() {
-        const texts = this.getGenderTexts();
-        document.getElementById('feedback-area').innerHTML =
-          `<div class="feedback error">${texts.tryAgain}</div>`;
-      },
-
-      nextQuestion() {
-        this.currentIndex++;
-        this.showQuestion();
-      },
-
-      showModeSelect() {
-        document.getElementById('activity-area').style.display = 'none';
-        document.getElementById('mode-select').style.display = 'block';
-        document.getElementById('page-title').textContent = 'אותיות';
+      playLetterName() {
+        const letterData = this.hebrewLetters.find(l => l.letter === this.targetLetter);
+        if (letterData) {
+          Speech.speak(letterData.name);
+        }
       },
 
       showComplete() {
-        const activityArea = document.querySelector('#activity-area .activity-content');
-        activityArea.innerHTML = `
+        const g = this.state.gender || 'boy';
+        const msg = g === 'girl' ? 'סיימת! כל הכבוד!' : 'סיימת! כל הכבוד!';
+        document.getElementById('activity-area').innerHTML = `
           <div style="text-align: center; padding: 50px 20px;">
             <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
-            <h2 style="color: var(--warm-red); margin-bottom: 15px;">סיימת את כל האותיות! כל הכבוד! 🌟</h2>
-            <div class="nav-controls">
-              <button class="btn btn-primary" onclick="LettersActivity.showModeSelect()">
-                תרגול נוסף
-              </button>
-              <button class="btn btn-secondary" onclick="window.location.href='../../index.html'">
-                חזרה לתפריט
-              </button>
-            </div>
+            <h2 style="color: var(--warm-red); margin-bottom: 15px;">${msg} 🌟</h2>
+            <button class="btn btn-primary" onclick="window.location.reload()">
+              לשחק שוב
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='../../index.html'" style="margin-top: 10px;">
+              חזרה לתפריט
+            </button>
           </div>
         `;
       },
 
       updateProgress() {
-        const pct = Math.round((this.currentIndex / this.questions.length) * 100);
+        const pct = Math.round((this.currentIndex / this.targetLetters.length) * 100);
         document.getElementById('progress-fill').style.width = pct + '%';
+      },
+
+      bindEvents() {
+        document.getElementById('done-search-btn').addEventListener('click', () => {
+          this.finishSearch();
+        });
+
+        document.getElementById('check-count-btn').addEventListener('click', () => {
+          this.checkCount();
+        });
+
+        document.getElementById('hear-letter-btn').addEventListener('click', () => {
+          this.playLetterName();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+          this.currentIndex++;
+          this.showRound();
+        });
       },
 
       shuffleArray(arr) {

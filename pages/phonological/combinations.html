@@ -5,6 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>חלוקה לצירופים</title>
   <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .word-with-image {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .word-with-image img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .word-with-image .emoji-fallback {
+      font-size: 6rem;
+    }
+
+    .word-with-image .word-text {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      letter-spacing: 3px;
+    }
+
+    @media (max-width: 600px) {
+      .word-with-image img { width: 140px; height: 140px; }
+      .word-with-image .emoji-fallback { font-size: 5rem; }
+      .word-with-image .word-text { font-size: 2rem; }
+    }
+  </style>
 </head>
 <body>
 
@@ -28,7 +62,10 @@
     <div class="activity-content" id="activity-area">
       <div class="word-display" id="word-display">
         <p id="instruction-text" style="font-size: 1.2rem; color: var(--text-medium); margin-bottom: 20px;"></p>
-        <div class="word" id="current-word"></div>
+
+        <!-- תמונה + מילה יחד -->
+        <div class="word-with-image" id="word-with-image"></div>
+
         <button class="btn btn-secondary" id="play-word-btn" style="margin-bottom: 20px;">
           🔊 <span id="play-btn-text"></span>
         </button>
@@ -81,7 +118,7 @@
           return;
         }
 
-        Progress.load(this.state.familyName || 'default');
+        Progress.load(this.state.childName || 'default');
 
         this.updateGenderText();
         this.setDifficulty('easy');
@@ -127,20 +164,33 @@
         }
 
         const word = this.words[this.currentIndex];
-        document.getElementById('current-word').textContent = word.word;
+
+        // הצגת תמונה + מילה יחד
+        const container = document.getElementById('word-with-image');
+        let imageHtml = '';
+        if (word.image) {
+          imageHtml = `<img src="${word.image}" alt="${word.plain}" onerror="this.outerHTML='<span class=\\'emoji-fallback\\'>${word.emoji || '❓'}</span>'">`;
+        } else {
+          imageHtml = `<span class="emoji-fallback">${word.emoji || '❓'}</span>`;
+        }
+        container.innerHTML = `
+          ${imageHtml}
+          <div class="word-text">${word.word}</div>
+        `;
+
         document.getElementById('next-btn').style.display = 'none';
         document.getElementById('feedback-area').innerHTML = '';
         document.getElementById('parts-display').style.display = 'none';
 
-        const container = document.getElementById('answer-buttons');
-        container.innerHTML = '';
+        const answersContainer = document.getElementById('answer-buttons');
+        answersContainer.innerHTML = '';
         for (let i = 1; i <= 5; i++) {
           const btn = document.createElement('button');
           btn.className = 'syllable-block';
           btn.textContent = i;
           btn.style.minWidth = '60px';
           btn.addEventListener('click', () => this.checkAnswer(i));
-          container.appendChild(btn);
+          answersContainer.appendChild(btn);
         }
 
         document.getElementById('question-area').style.display = 'block';
@@ -149,7 +199,7 @@
 
       checkAnswer(num) {
         const word = this.words[this.currentIndex];
-        const correct = word.parts.length;
+        const correct = word.partsCount || word.parts.length;
         const g = this.state.gender || 'boy';
 
         if (num === correct) {
@@ -176,7 +226,7 @@
           document.getElementById('question-area').style.display = 'none';
 
           Progress.completeItem(
-            this.state.familyName || 'default',
+            this.state.childName || 'default',
             'combinations',
             `${this.currentDifficulty}-${this.currentIndex}`
           );
